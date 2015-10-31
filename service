@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ -e "/var/www/vendor/canis/docker-app-farm-lib/service" ]; then
+	bash /var/www/vendor/canis/docker-app-farm-lib/service
+fi

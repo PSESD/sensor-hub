@@ -1,0 +1,11 @@
+/.composer/
+composer.lock
+*.sublime-workspace
+/vendor/
+/docker-compose.yml
+.DS_Store
+/certs/
+/storage/
+/runtime/
+error.log
+.bash_history
