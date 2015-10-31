@@ -1,23 +1,8 @@
-# The nginx server for serving static files directly, cached contents via the memcached server and php files via the php-fpm server
-proxy:
-  image: jwilder/nginx-proxy
-  restart: always
-  ports:
-    - "80:80"
-    - "443:443"
-  volumes:
-    - "/var/run/docker.sock:/tmp/docker.sock:ro"
-    - "./scripts/my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro"
-  volumes_from:
-    - certs
-  privileged: true
 web:
   image: jacobom/lemp:web
   restart: always
   volumes:
     - ./:/var/www
-    - /volumes:/volumes
-    - "/var/run/docker.sock:/tmp/docker.sock:ro"
   ports:
     - "80"
   expose:
@@ -25,16 +10,12 @@ web:
   links:
     - db
     - cache
-  volumes_from:
-    - transfer
-    - certs
   privileged: true
   cpu_shares: 512
   environment:
     VIRTUAL_HOST: "$HOST"
     NGINX_ERROR_LOG_LEVEL: "notice"
-    CERT_NAME: "farm_host"
-    DB_NAME: "appFarm"
+    DB_NAME: "sensorHub"
     GITHUB_API_TOKEN: "$GITHUB_API_TOKEN"
 db:
   restart: always
@@ -44,15 +25,7 @@ db:
   expose:
     - "3360"
   environment:
-    DB_NAME: "appFarm"
-transfer:
-  image: busybox
-  volumes:
-    - "/var/transfer"
-certs:
-  image: busybox
-  volumes:
-    - "/etc/nginx/certs"
+    DB_NAME: "sensorHub"
 cache:
   restart: always
   image: jacobom/lemp:redis

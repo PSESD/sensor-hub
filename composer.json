@@ -46,6 +46,7 @@
         "yiisoft/yii2-debug": "2.0.*"
     },
     "extra": {
+        "bootstrap": "canis\\sensorHub\\Bootstrap",
         "yii\\composer\\Installer::postCreateProject": {
             "setPermission": [
                 {
@@ -71,7 +72,7 @@
     },
     "autoload": {
         "psr-4": {
-            "canis\\sensor\\": "src"
+            "canis\\sensorHub\\": "src"
         }
     }
 }
