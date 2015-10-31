@@ -21,6 +21,7 @@
     "require": {
         "canis/yii2-canis-lib": "*",
         "canis/yii2-composer": "*",
+        "canis/sensors": "*",
         "yiisoft/yii2-bootstrap": "2.0.*",
         "yiisoft/yii2-redis": "2.0.*",
         "yiisoft/yii2-jui": "2.0.*",
