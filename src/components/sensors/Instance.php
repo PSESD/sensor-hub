@@ -12,11 +12,22 @@ use canis\broadcaster\eventTypes\EventType;
 use canis\action\Status;
 use linslin\yii2\curl;
 
+use canis\sensors\assets\AssetInterface;
+use canis\sensors\sites\SiteInterface;
+use canis\sensors\base\SensorInterface;
+use canis\sensors\providers\ProviderInterface;
+
+use canis\sensorHub\models\Site as SiteModel;
+use canis\sensorHub\models\Sensor as SensorModel;
+use canis\sensorHub\models\Asset as AssetModel;
+use canis\sensorHub\models\Source as SourceModel;
+
 abstract class Instance 
 	extends \canis\base\Component
     implements \canis\broadcaster\BroadcastableInterface
 {
 	public $model;
+	public $object;
     public $setupErrors = [];
 	protected $_attributes = [];
 	protected $_statusLog;
@@ -44,7 +55,114 @@ abstract class Instance
         );
     }
 
-    abstract public function getPackage();
+    public function getPackage()
+    {
+        $package = [];
+        $package['object'] = $this->object->getPackage();
+        $package['attributes'] = $this->attributes;
+        return $package;
+    }
+
+    public function getSensorObjectModelClass(\canis\sensors\base\BaseInterface $object)
+    {
+        if ($object instanceof SensorInterface) {
+            return SensorModel::className();
+        }
+        if ($object instanceof AssetInterface) {
+            return AssetModel::className();
+        }
+        if ($object instanceof SiteInterface) {
+            return SiteModel::className();
+        }
+        if ($object instanceof ProviderInterface) {
+            return SourceModel::className();
+        }
+        return false;
+    }
+
+
+    public function getSensorObjectInstanceClass(\canis\sensors\base\BaseInterface $object)
+    {
+        if ($object instanceof SensorInterface) {
+            return SensorInstance::className();
+        }
+        if ($object instanceof AssetInterface) {
+            return AssetInstance::className();
+        }
+        if ($object instanceof SiteInterface) {
+            return SiteInstance::className();
+        }
+        if ($object instanceof ProviderInterface) {
+            return SourceInstance::className();
+        }
+        return false;
+    }
+
+    public function buildSensorObjectModel(\canis\sensors\base\BaseInterface $object)
+    {
+        $modelClass = $this->getSensorObjectModelClass($object);
+        $instanceClass = $this->getSensorObjectInstanceClass($object);
+        if (!$modelClass) {
+            return false;
+        }
+        if (!isset($object->parentObject->model->primaryKey)) { 
+            return false;
+        }
+        $baseAttributes = ['system_id' => $object->getId()];
+        $additionalAttributes = [];
+        if ($object instanceof SensorInterface) {
+            $baseAttributes['object_id'] = $object->parentObject->model->primaryKey;
+        }
+        if ($object instanceof AssetInterface) {
+            $baseAttributes['source_id'] = $object->parentObject->model->primaryKey;
+            $baseAttributes['type'] = $object->getType();
+        }
+        if ($object instanceof SiteInterface) {
+            $baseAttributes['source_id'] = $object->parentObject->model->primaryKey;
+        }
+        $additionalAttributes['name'] = $object->getName();
+        
+        $model = $modelClass::find()->where($baseAttributes)->one();
+        if (!$model) {
+            $model = new $modelClass;
+            $model->active = 1;
+        }
+        $model->attributes = array_merge($baseAttributes, $additionalAttributes);
+        if (empty($model->dataObject)) {
+            $model->dataObject = new $instanceClass;
+        }
+        $objectClone = clone $object;
+        $objectClone->parentObject = null;
+        $model->dataObject->object = $objectClone;
+        if (!$model->save()) {
+            return false;
+        }
+        return $model;
+    }
+
+    public function cleanSensorObjectModel(\canis\sensors\base\BaseInterface $object)
+    {
+        $modelClass = $this->getSensorObjectModelClass($object);
+        if (!$modelClass) {
+            return false;
+        }
+    }
+
+    public function loadModels()
+    {
+        if (empty($this->object)) {
+            return true;
+        }
+        return $this->object->loadModels([$this, 'buildSensorObjectModel']);
+    }
+
+    public function cleanModels()
+    {
+        if (empty($this->object)) {
+            return true;
+        }
+        return $this->object->cleanModels([$this, 'cleanSensorObjectModel']);
+    }
 
     public function clearAttribute($k)
     {
@@ -116,7 +234,7 @@ abstract class Instance
         $curl = new curl\Curl();
         $headers = [];
         if ($apiKey !== null) {
-        	$headers[] = 'X-Api-Key: \"' . addslashes($apiKey) .'\"';
+        	$headers[] = 'X-Api-Key: ' . addslashes($apiKey) .'';
         }
         $curl->setOption(CURLOPT_CONNECTTIMEOUT, $timeout);
         $curl->setOption(CURLOPT_TIMEOUT, $timeout);
@@ -131,6 +249,34 @@ abstract class Instance
         }
         return ['data' => $response, 'error' => false, 'responseCode' => (int) $curl->responseCode];
     }
+
+    protected function loadObject($config, $interfaceName)
+    {
+    	if (!isset($config['class']) || !class_exists($config['class'])) {
+    		return false;
+    	}
+    	$reflection = new \ReflectionClass($config['class']);
+    	if (!$reflection->implementsInterface($interfaceName)) {
+    		return false;
+    	}
+        try {
+            $object = Yii::createObject($config);
+        } catch (\Exception $e) {
+            throw $e;
+            $object = false;
+        }
+        if (!$object) {
+            return false;
+        }
+        if (!empty($object->invalidEntries)) {
+            \d($object->invalidEntries);exit;
+        }
+        $this->object = $object;
+        $this->object->model = $this->model;
+    	$this->model->system_id = $this->object->id;
+    	return $this->object;
+    }
+
 
     /**
      * [[@doctodo method_description:saveCache]].

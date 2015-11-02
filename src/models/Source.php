@@ -23,14 +23,6 @@ use Yii;
  */
 class Source extends \canis\db\ActiveRecordRegistry
 {
-    protected $_dataObject;
-    
-    public function init()
-    {
-        parent::init();
-        $this->on(self::EVENT_BEFORE_VALIDATE, [$this, 'serializeData']);
-    }
-    
     /**
      * @inheritdoc
      */
@@ -39,27 +31,22 @@ class Source extends \canis\db\ActiveRecordRegistry
         return false;
     }
 
-     /**
-     * [[@doctodo method_description:serializeAction]].
-     */
-    public function serializeData()
-    {
-        if (isset($this->_dataObject)) {
-            try {
-                $this->data = serialize($this->_dataObject);
-            } catch (\Exception $e) {
-                \d($this->_dataObject);
-                exit;
-            }
-        }
-    }
-
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
         return 'source';
+    }
+
+    public function behaviors()
+    {
+        return array_merge(parent::behaviors(), [
+            'DataBehavior' => [
+                'class' => behaviors\DataBehavior::className(),
+                'buildModelsAfter' => true
+            ]
+        ]);
     }
 
     /**
@@ -113,23 +100,4 @@ class Source extends \canis\db\ActiveRecordRegistry
     }
 
 
-    public function getDataObject()
-    {
-        if (!isset($this->_dataObject) && !empty($this->data)) {
-            $this->_dataObject = unserialize($this->data);
-            $this->_dataObject->model = $this;
-        }
-        return $this->_dataObject;
-    }
-
-    /**
-     * Set action object.
-     *
-     * @param [[@doctodo param_type:ao]] $ao [[@doctodo param_description:ao]]
-     */
-    public function setDataObject($do)
-    {
-        $do->model = $this;
-        $this->_dataObject = $do;
-    }
 }

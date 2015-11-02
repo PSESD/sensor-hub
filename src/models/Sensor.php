@@ -14,6 +14,7 @@ use Yii;
  * @property resource $data
  * @property integer $resolution_attempts
  * @property string $last_resolution_attempt
+ * @property bool $active
  * @property string $checked
  * @property string $created
  *
@@ -69,9 +70,10 @@ class Sensor extends \canis\db\ActiveRecordRegistry
     public function rules()
     {
         return [
-            [['instance_id', 'system_id'], 'required'],
-            [['state', 'data'], 'string'],
+            [['instance_id', 'system_id', 'name'], 'required'],
+            [['state', 'data', 'name'], 'string'],
             [['resolution_attempts'], 'integer'],
+            [['active'], 'integer'],
             [['last_resolution_attempt', 'checked', 'created'], 'safe'],
             [['id', 'instance_id'], 'string', 'max' => 36],
             [['system_id'], 'string', 'max' => 255]

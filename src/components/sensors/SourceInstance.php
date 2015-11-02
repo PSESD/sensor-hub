@@ -9,6 +9,7 @@ namespace canis\sensorHub\components\sensors;
 
 use Yii;
 use canis\broadcaster\eventTypes\EventType;
+use canis\sensors\providers\ProviderInterface;
 
 class SourceInstance extends Instance
 {
@@ -46,10 +47,24 @@ class SourceInstance extends Instance
     		} else {
     			$this->setupErrors['url'] = 'An unknown error occurred while validating the data source';
     		}
-    		return;
+    		return false;
     	}
 
-    	
+    	if (!isset($data['data']['provider']) || !isset($data['data']['provider']['class'])) {
+    		$this->setupErrors['url'] = 'Sensor source did not provide a valid response.';
+    		return false;
+    	}
+
+		if (!class_exists($data['data']['provider']['class'])) {
+    		$this->setupErrors['url'] = 'Sensor provider is not recognized by this sensor monitor instance.';
+    		return false;
+		}
+
+		if (!$this->loadObject($data['data']['provider'], ProviderInterface::class)) {
+    		$this->setupErrors['url'] = 'Sensor provider could not be validated.';
+    		return false;
+		}
+		return true;	
     }
 
 
@@ -86,7 +101,7 @@ class SourceInstance extends Instance
 		$fields['checkInterval'] = [
 			'label' => 'Check Interval',
 			'type' => 'select',
-			'default' => '+1 minute',
+			'default' => '+5 minutes',
 			'options' => $intervals,
 			'required' => true,
 			'full' => false,
@@ -97,7 +112,7 @@ class SourceInstance extends Instance
 
     public function getPackage()
     {
-    	$package = [];
+    	$package = parent::getPackage();
 
     	return $package;
     }

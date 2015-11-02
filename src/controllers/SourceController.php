@@ -22,7 +22,7 @@ class SourceController extends Controller
     }
     public function actionCreate()
     {
-        $this->params['model'] = new Source;
+        $this->params['model'] = $model = new Source;
         $this->params['scenario'] = $scenario = 'create';
         $this->params['instance'] = $this->params['model']->dataObject = new SourceInstance;
         if (!empty($_POST)) {
@@ -39,7 +39,7 @@ class SourceController extends Controller
                 $this->params['model']->validate();
             }
             if ($valid && $this->params['model']->save()) {
-                Yii::$app->response->success = 'Sensor source \'' . $this->name .'\' created!';
+                Yii::$app->response->success = 'Sensor source \'' . $model->name .'\' created!';
                 Yii::$app->response->task = 'trigger';
                 if (!empty($_GET['redirect'])) {
                     if ($_GET['redirect'] === 'sources') {
