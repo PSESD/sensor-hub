@@ -38,6 +38,7 @@ class SourceController extends Controller
             if (!$valid) {
                 $this->params['model']->validate();
             }
+            $this->params['model']->last_check = date("Y-m-d G:i:s");
             if ($valid && $this->params['model']->save()) {
                 Yii::$app->response->success = 'Sensor source \'' . $model->name .'\' created!';
                 Yii::$app->response->task = 'trigger';

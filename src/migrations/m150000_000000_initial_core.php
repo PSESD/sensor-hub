@@ -24,7 +24,6 @@ class m150000_000000_initial_core extends \canis\db\Migration
             'data' => 'longblob DEFAULT NULL',
             'active' => 'bool NOT NULL DEFAULT 0',
             'last_check' => 'datetime DEFAULT NULL',
-            'next_check' => 'datetime DEFAULT NULL',
             'created' => 'datetime DEFAULT NULL',
             'modified' => 'datetime DEFAULT NULL'
         ]);
@@ -73,7 +72,8 @@ class m150000_000000_initial_core extends \canis\db\Migration
             'active' => 'bool NOT NULL DEFAULT 0',
             'resolution_attempts' => 'int DEFAULT 0',
             'last_resolution_attempt' => 'datetime DEFAULT NULL',
-            'checked' => 'datetime DEFAULT NULL',
+            'last_check' => 'datetime DEFAULT NULL',
+            'next_check' => 'datetime DEFAULT NULL',
             'created' => 'datetime DEFAULT NULL'
         ]);
 

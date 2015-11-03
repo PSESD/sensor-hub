@@ -1,9 +1,9 @@
 #!/bin/bash
 
 sleep 5
-if [ -e "/var/www/vendor/autoload.php" ]; then
-	if [ -e "/var/www/config/env.php" ]; then
-		php /var/www/bin/yii privileged/ensure-cron
-		sudo -u www-data php /var/www/bin/yii daemon
-	fi
-fi
+# if [ -e "/var/www/vendor/autoload.php" ]; then
+# 	if [ -e "/var/www/config/env.php" ]; then
+# 		php /var/www/bin/yii privileged/ensure-cron
+# 		sudo -u www-data php /var/www/bin/yii daemon
+# 	fi
+# fi

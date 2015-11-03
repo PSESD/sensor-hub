@@ -58,6 +58,11 @@ abstract class Instance
     public function getPackage()
     {
         $package = [];
+        $package['model'] = false;
+        if (isset($this->model)) {
+            $package['model'] = $this->model->attributes;
+            $package['model']['descriptor'] = $this->model->descriptor;
+        }
         $package['object'] = $this->object->getPackage();
         $package['attributes'] = $this->attributes;
         return $package;
@@ -108,10 +113,18 @@ abstract class Instance
         if (!isset($object->parentObject->model->primaryKey)) { 
             return false;
         }
+
+        $objectInstance = new $instanceClass;
+        $objectClone = clone $object;
+        $objectClone->parentObject = null;
+        $objectInstance->object = $objectClone;
+
         $baseAttributes = ['system_id' => $object->getId()];
         $additionalAttributes = [];
         if ($object instanceof SensorInterface) {
             $baseAttributes['object_id'] = $object->parentObject->model->primaryKey;
+            $additionalAttributes['last_check'] = date("Y-m-d G:i:s");
+            $additionalAttributes['next_check'] = date("Y-m-d G:i:s", strtotime($object->getCheckInterval($objectInstance)));
         }
         if ($object instanceof AssetInterface) {
             $baseAttributes['source_id'] = $object->parentObject->model->primaryKey;
@@ -123,17 +136,17 @@ abstract class Instance
         $additionalAttributes['name'] = $object->getName();
         
         $model = $modelClass::find()->where($baseAttributes)->one();
+
         if (!$model) {
             $model = new $modelClass;
             $model->active = 1;
         }
         $model->attributes = array_merge($baseAttributes, $additionalAttributes);
+
         if (empty($model->dataObject)) {
-            $model->dataObject = new $instanceClass;
+            $model->dataObject = $objectInstance;   
         }
-        $objectClone = clone $object;
-        $objectClone->parentObject = null;
-        $model->dataObject->object = $objectClone;
+
         if (!$model->save()) {
             return false;
         }
@@ -275,6 +288,19 @@ abstract class Instance
         $this->object->model = $this->model;
     	$this->model->system_id = $this->object->id;
     	return $this->object;
+    }
+
+    public function getSensor($id)
+    {
+        if (empty($this->model) || empty($this->model->primaryKey)) {
+            return false;
+        }
+
+        $sensor = SensorModel::find()->where(['object_id' => $this->model->primaryKey, 'system_id' => $id])->one();
+        if (!$sensor) {
+            return false;
+        }
+        return $sensor->dataObject;
     }
 
 

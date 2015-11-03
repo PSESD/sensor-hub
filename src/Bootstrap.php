@@ -2,8 +2,17 @@
 namespace canis\sensorHub;
 
 use Yii;
+use canis\sensorHub\components\base\Daemon as SensorDaemon;
 
-class Extension implements \yii\base\BootstrapInterface
+use yii\base\Application;
+use yii\base\Event;
+use yii\base\BootstrapInterface;
+use canis\cron\Cron;
+use canis\daemon\Daemon;
+use canis\daemon\TickDaemon;
+use canis\broadcaster\Module as BroadcasterModule;
+
+class Bootstrap implements \yii\base\BootstrapInterface
 {
     /**
      * @inheritdoc
@@ -24,8 +33,13 @@ class Extension implements \yii\base\BootstrapInterface
     	// Event::on(TickDaemon::className(), TickDaemon::EVENT_TICK, [Engine::className(), 'ensureCertificates']);
      //    Event::on(TickDaemon::className(), TickDaemon::EVENT_TICK, [Engine::className(), 'collectBackups']);
 
-    	// Event::on(TickDaemon::className(), TickDaemon::EVENT_TICK, [Engine::className(), 'checkUninitialized']);
-     //    Event::on(TickDaemon::className(), TickDaemon::EVENT_POST_TICK, [Engine::className(), 'failUninitialized']);
+        Event::on(Daemon::className(), Daemon::EVENT_REGISTER_DAEMONS, [$this, 'registerDaemon']);
+    }
+
+    public function registerDaemon($event)
+    {
+        $sensorDaemon = SensorDaemon::getInstance();
+        $event->controller->registerDaemon('sensor', $sensorDaemon);
     }
 
     public function collectEventTypes($event)

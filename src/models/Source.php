@@ -98,6 +98,4 @@ class Source extends \canis\db\ActiveRecordRegistry
     {
         return $this->hasMany(Site::className(), ['source_id' => 'id']);
     }
-
-
 }

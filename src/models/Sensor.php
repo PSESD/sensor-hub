@@ -8,14 +8,15 @@ use Yii;
  * This is the model class for table "sensor".
  *
  * @property string $id
- * @property string $instance_id
+ * @property string $object_id
  * @property string $system_id
  * @property string $state
  * @property resource $data
  * @property integer $resolution_attempts
  * @property string $last_resolution_attempt
  * @property bool $active
- * @property string $checked
+ * @property string $next_check
+ * @property string $last_check
  * @property string $created
  *
  * @property Instance $instance
@@ -70,12 +71,12 @@ class Sensor extends \canis\db\ActiveRecordRegistry
     public function rules()
     {
         return [
-            [['instance_id', 'system_id', 'name'], 'required'],
+            [['object_id', 'system_id', 'name'], 'required'],
             [['state', 'data', 'name'], 'string'],
             [['resolution_attempts'], 'integer'],
             [['active'], 'integer'],
-            [['last_resolution_attempt', 'checked', 'created'], 'safe'],
-            [['id', 'instance_id'], 'string', 'max' => 36],
+            [['last_resolution_attempt', 'last_check', 'next_check', 'created'], 'safe'],
+            [['id', 'object_id'], 'string', 'max' => 36],
             [['system_id'], 'string', 'max' => 255]
         ];
     }
@@ -93,7 +94,7 @@ class Sensor extends \canis\db\ActiveRecordRegistry
             'data' => 'Data',
             'resolution_attempts' => 'Resolution Attempts',
             'last_resolution_attempt' => 'Last Resolution Attempt',
-            'checked' => 'Checked',
+            'last_check' => 'Checked',
             'created' => 'Created',
         ];
     }

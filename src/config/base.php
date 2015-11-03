@@ -10,6 +10,7 @@ use canis\sensorHub\components\base\ClassManager;
 use canis\sensorHub\components\web\View;
 use canis\sensorHub\components\web\Response;
 use canis\web\unifiedMenu\ApplicationComponent as UnifiedMenuComponent;
+use canis\sensorHub\Bootstrap;
 
 defined('CANIS_ROLE_LEVEL_OWNER') 		|| define('CANIS_ROLE_LEVEL_OWNER', 600); // owner levels: 501-600
 defined('CANIS_ROLE_LEVEL_MANAGER')		|| define('CANIS_ROLE_LEVEL_MANAGER', 500); // manager levels: 401-500
@@ -36,6 +37,7 @@ if (!isset($base['bootstrap'])) {
 	$base['bootstrap'] = [];
 }
 $base['bootstrap'][] = 'collectors';
+$base['bootstrap'][] = Bootstrap::class;
 $base['extensions'] = include(CANIS_APP_VENDOR_PATH . DIRECTORY_SEPARATOR . 'yiisoft' . DIRECTORY_SEPARATOR . 'extensions.php');
 
 if (!isset($base['params'])) {

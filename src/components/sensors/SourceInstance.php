@@ -10,6 +10,7 @@ namespace canis\sensorHub\components\sensors;
 use Yii;
 use canis\broadcaster\eventTypes\EventType;
 use canis\sensors\providers\ProviderInterface;
+use canis\sensors\base\Sensor as BaseSensor;
 
 class SourceInstance extends Instance
 {
@@ -30,6 +31,64 @@ class SourceInstance extends Instance
             'priority' => EventType::PRIORITY_LOW
         ];
     	return $events;
+    }
+
+    public function getObjectModel()
+    {
+
+    }
+
+    public function check($event)
+    {
+    	$sourceSensor = $event->sensorInstance;
+    	$this->internalCheck($event);
+    	if ($event->pause === false) {
+    		$event->pause = $this->attributes['checkInterval'];
+    	}
+    }
+
+    protected function internalCheck($event)
+    {
+    	$data = static::fetchData($this->attributes['url'], $this->attributes['apiKey']);
+    	if (!$data || !empty($data['error'])) {
+    		$event->state = BaseSensor::STATE_ERROR;
+    		if (!empty($data['responseCode']) && $data['responseCode'] === 404) {
+    			$event->addError('Data source was not found at this URL');
+    			$event->notify = true;
+    			$event->pause = '+1 day';
+    		} elseif (!empty($data['responseCode']) && $data['responseCode'] === 403) {
+    			$event->addError('API Key was rejected');
+    			$event->notify = true;
+    			$event->pause = '+1 day';
+    		} elseif (!empty($data['responseCode']) && $data['responseCode'] === 'timeout') {
+    			$event->addError('Response timed out while trying to process the request');
+    		} else {
+    			$event->addError('An unknown error occurred while validating the data source');
+    		}
+    		return;
+    	}
+
+    	if (!isset($data['data']['provider']) || !isset($data['data']['provider']['class'])) {
+    		$event->addError('Sensor source did not provide a valid response.');
+    		$event->state = BaseSensor::STATE_ERROR;
+    		return;
+    	}
+
+		if (!class_exists($data['data']['provider']['class'])) {
+    		$event->addError('Sensor provider is not recognized by this sensor monitor instance.');
+			$event->notify = true;
+			$event->pause = '+1 day';
+    		$event->state = BaseSensor::STATE_ERROR;
+    		return;
+		}
+
+		if (!$this->loadObject($data['data']['provider'], ProviderInterface::class)) {
+    		$event->addError('Sensor provider could not be validated.');
+			$event->notify = true;
+			$event->pause = '+1 day';
+    		$event->state = BaseSensor::STATE_ERROR;
+    		return;
+		}
     }
 
     public function validateSetup($scenario = 'create')
