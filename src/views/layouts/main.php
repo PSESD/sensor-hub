@@ -21,8 +21,8 @@ echo Nav::widget([
             'visible' => !Yii::$app->user->isGuest
         ],
         [
-            'label' => 'Sources' ,
-            'url' => ['/source/index'],
+            'label' => 'Providers' ,
+            'url' => ['/provider/index'],
             'visible' => !Yii::$app->user->isGuest
         ],
         [

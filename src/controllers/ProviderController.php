@@ -10,10 +10,10 @@ namespace canis\sensorHub\controllers;
 
 use Yii;
 use yii\web\NotFoundHttpException;
-use canis\sensorHub\models\Source;
-use canis\sensorHub\components\sensors\SourceInstance;
+use canis\sensorHub\models\Provider;
+use canis\sensorHub\components\sensors\ProviderInstance;
 
-class SourceController extends Controller
+class ProviderController extends Controller
 {
 
     public function actionIndex()
@@ -22,14 +22,14 @@ class SourceController extends Controller
     }
     public function actionCreate()
     {
-        $this->params['model'] = $model = new Source;
+        $this->params['model'] = $model = new Provider;
         $this->params['scenario'] = $scenario = 'create';
-        $this->params['instance'] = $this->params['model']->dataObject = new SourceInstance;
+        $this->params['instance'] = $this->params['model']->initializeData = new ProviderInstance;
         if (!empty($_POST)) {
             $data = false;
-            if (isset($_POST['Source']['data'])) {
-                $data = $_POST['Source']['data'];
-                unset($_POST['Source']['data']);
+            if (isset($_POST['Provider']['data'])) {
+                $data = $_POST['Provider']['data'];
+                unset($_POST['Provider']['data']);
             }
             $this->params['model']->load($_POST);
             $this->params['instance']->attributes = $data;
@@ -39,22 +39,22 @@ class SourceController extends Controller
                 $this->params['model']->validate();
             }
             $this->params['model']->last_check = date("Y-m-d G:i:s");
-            if ($valid && $this->params['model']->save()) {
-                Yii::$app->response->success = 'Sensor source \'' . $model->name .'\' created!';
+            if ($valid && $this->params['model']->save() && !$this->params['model']->initializationFailed) {
+                Yii::$app->response->success = 'Sensor provider \'' . $model->name .'\' created!';
                 Yii::$app->response->task = 'trigger';
                 if (!empty($_GET['redirect'])) {
-                    if ($_GET['redirect'] === 'sources') {
-                        Yii::$app->response->redirect = ['/source/index'];
+                    if ($_GET['redirect'] === 'providers') {
+                        Yii::$app->response->redirect = ['/provider/index'];
                     }
                 }
-                Yii::$app->response->trigger = [['refresh', '.source-manager']];
+                Yii::$app->response->trigger = [['refresh', '.provider-manager']];
                 return;
             }
         }
         Yii::$app->response->view = 'create';
         Yii::$app->response->task = 'dialog';
         Yii::$app->response->labels['submit'] = 'Create';
-        Yii::$app->response->taskOptions = ['title' => 'Add Sensor Source', 'width' => '800px'];
+        Yii::$app->response->taskOptions = ['title' => 'Add Sensor Provider', 'width' => '800px'];
     }
 }
 ?>

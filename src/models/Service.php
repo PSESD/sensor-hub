@@ -5,28 +5,28 @@ namespace canis\sensorHub\models;
 use Yii;
 
 /**
- * This is the model class for table "site".
+ * This is the model class for table "service".
  *
  * @property string $id
- * @property string $source_id
+ * @property string $object_id
  * @property string $system_id
  * @property string $name
  * @property resource $data
- * @property integer $active
  * @property string $created
  * @property string $modified
  *
- * @property Source $source
+ * @property Registry $object
  * @property Registry $id0
+ * @property ServiceReference[] $serviceReferences
  */
-class Site extends \canis\db\ActiveRecordRegistry
+class Service extends \canis\db\ActiveRecordRegistry
 {
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'site';
+        return 'service';
     }
 
     /**
@@ -53,13 +53,12 @@ class Site extends \canis\db\ActiveRecordRegistry
     public function rules()
     {
         return [
-            [['source_id', 'system_id', 'name'], 'required'],
+            [['object_id', 'system_id', 'name'], 'required'],
             [['data'], 'string'],
-            [['active'], 'integer'],
             [['created', 'modified'], 'safe'],
-            [['id', 'source_id'], 'string', 'max' => 36],
+            [['id', 'object_id'], 'string', 'max' => 36],
             [['system_id', 'name'], 'string', 'max' => 255],
-            [['source_id'], 'exist', 'skipOnError' => true, 'targetClass' => Source::className(), 'targetAttribute' => ['source_id' => 'id']],
+            [['object_id'], 'exist', 'skipOnError' => true, 'targetClass' => Registry::className(), 'targetAttribute' => ['object_id' => 'id']],
         ];
     }
 
@@ -70,11 +69,10 @@ class Site extends \canis\db\ActiveRecordRegistry
     {
         return [
             'id' => 'ID',
-            'source_id' => 'Source ID',
+            'object_id' => 'Object ID',
             'system_id' => 'System ID',
             'name' => 'Name',
             'data' => 'Data',
-            'active' => 'Active',
             'created' => 'Created',
             'modified' => 'Modified',
         ];
@@ -83,9 +81,16 @@ class Site extends \canis\db\ActiveRecordRegistry
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getSource()
+    public function getObject()
     {
-        return $this->hasOne(Source::className(), ['id' => 'source_id']);
+        return $this->hasOne(Registry::className(), ['id' => 'object_id']);
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getServiceReferences()
+    {
+        return $this->hasMany(ServiceReference::className(), ['service_id' => 'id']);
+    }
 }

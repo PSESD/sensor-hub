@@ -12,22 +12,22 @@ use canis\broadcaster\eventTypes\EventType;
 use canis\sensors\providers\ProviderInterface;
 use canis\sensors\base\Sensor as BaseSensor;
 
-class SourceInstance extends Instance
+class ProviderInstance extends Instance
 {
 	static public function collectEventTypes()
     {
     	$events = [];
-        $events['source_created'] = [
-            'name' => 'Sensor Source Created',
-            'descriptorString' => 'Sensor source \'{{ source.name }}\' was created'
+        $events['provider_created'] = [
+            'name' => 'Sensor Provider Created',
+            'descriptorString' => 'Sensor provider \'{{ provider.name }}\' was created'
         ];
-        $events['source_updated'] = [
-            'name' => 'Sensor Source Updated',
-            'descriptorString' => 'Sensor source \'{{ source.name }}\' was updated'
+        $events['provider_updated'] = [
+            'name' => 'Sensor Provider Updated',
+            'descriptorString' => 'Sensor provider \'{{ provider.name }}\' was updated'
         ];
-        $events['source_checked'] = [
-            'name' => 'Sensor Source Checked',
-            'descriptorString' => 'Sensor source \'{{ source.name }}\' was checked',
+        $events['provider_checked'] = [
+            'name' => 'Sensor Provider Checked',
+            'descriptorString' => 'Sensor provider \'{{ provider.name }}\' was checked',
             'priority' => EventType::PRIORITY_LOW
         ];
     	return $events;
@@ -40,11 +40,17 @@ class SourceInstance extends Instance
 
     public function check($event)
     {
-    	$sourceSensor = $event->sensorInstance;
+    	$providerSensor = $event->sensorInstance;
     	$this->internalCheck($event);
     	if ($event->pause === false) {
     		$event->pause = $this->attributes['checkInterval'];
     	}
+    }
+
+    public function initialize()
+    {
+        
+        return false;
     }
 
     protected function internalCheck($event)
@@ -53,7 +59,7 @@ class SourceInstance extends Instance
     	if (!$data || !empty($data['error'])) {
     		$event->state = BaseSensor::STATE_ERROR;
     		if (!empty($data['responseCode']) && $data['responseCode'] === 404) {
-    			$event->addError('Data source was not found at this URL');
+    			$event->addError('Data provider was not found at this URL');
     			$event->notify = true;
     			$event->pause = '+1 day';
     		} elseif (!empty($data['responseCode']) && $data['responseCode'] === 403) {
@@ -63,13 +69,13 @@ class SourceInstance extends Instance
     		} elseif (!empty($data['responseCode']) && $data['responseCode'] === 'timeout') {
     			$event->addError('Response timed out while trying to process the request');
     		} else {
-    			$event->addError('An unknown error occurred while validating the data source');
+    			$event->addError('An unknown error occurred while validating the data provider');
     		}
     		return;
     	}
 
     	if (!isset($data['data']['provider']) || !isset($data['data']['provider']['class'])) {
-    		$event->addError('Sensor source did not provide a valid response.');
+    		$event->addError('Sensor provider did not provide a valid response.');
     		$event->state = BaseSensor::STATE_ERROR;
     		return;
     	}
@@ -100,17 +106,17 @@ class SourceInstance extends Instance
     	$data = static::fetchData($this->attributes['url'], $this->attributes['apiKey']);
     	if (!$data || !empty($data['error'])) {
     		if (!empty($data['responseCode']) && $data['responseCode'] === 404) {
-    			$this->setupErrors['url'] = 'Data source was not found at this URL';
+    			$this->setupErrors['url'] = 'Data provider was not found at this URL';
     		} elseif (!empty($data['responseCode']) && $data['responseCode'] === 403) {
     			$this->setupErrors['apiKey'] = 'API Key was rejected';
     		} else {
-    			$this->setupErrors['url'] = 'An unknown error occurred while validating the data source';
+    			$this->setupErrors['url'] = 'An unknown error occurred while validating the data provider';
     		}
     		return false;
     	}
 
     	if (!isset($data['data']['provider']) || !isset($data['data']['provider']['class'])) {
-    		$this->setupErrors['url'] = 'Sensor source did not provide a valid response.';
+    		$this->setupErrors['url'] = 'Sensor provider did not provide a valid response.';
     		return false;
     	}
 
@@ -131,7 +137,7 @@ class SourceInstance extends Instance
 	{
 		$fields = [];
 		$fields['url'] = [
-			'label' => 'Source URL',
+			'label' => 'Provider URL',
 			'type' => 'text',
 			'required' => true,
 			'full' => true,

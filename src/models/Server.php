@@ -5,12 +5,11 @@ namespace canis\sensorHub\models;
 use Yii;
 
 /**
- * This is the model class for table "asset".
+ * This is the model class for table "server".
  *
  * @property string $id
  * @property string $source_id
  * @property string $system_id
- * @property string $type
  * @property string $name
  * @property resource $data
  * @property integer $active
@@ -20,32 +19,14 @@ use Yii;
  * @property Source $source
  * @property Registry $id0
  */
-class Asset extends \canis\db\ActiveRecordRegistry
+class Server extends \canis\db\ActiveRecordRegistry
 {
-    /**
-     * @inheritdoc
-     */
-    public static function isAccessControlled()
-    {
-        return false;
-    }
-
-    public function behaviors()
-    {
-        return array_merge(parent::behaviors(), [
-            'DataBehavior' => [
-                'class' => behaviors\DataBehavior::className()
-            ]
-        ]);
-    }
-    
-
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'asset';
+        return 'server';
     }
 
     /**
@@ -54,14 +35,14 @@ class Asset extends \canis\db\ActiveRecordRegistry
     public function rules()
     {
         return [
-            [['source_id', 'system_id', 'type', 'name'], 'required'],
+            [['id', 'source_id', 'system_id', 'name'], 'required'],
             [['data'], 'string'],
             [['active'], 'integer'],
             [['created', 'modified'], 'safe'],
             [['id', 'source_id'], 'string', 'max' => 36],
-            [['system_id', 'type', 'name'], 'string', 'max' => 255],
-            // [['source_id'], 'exist', 'skipOnError' => true, 'targetClass' => Source::className(), 'targetAttribute' => ['source_id' => 'id']],
-            // [['id'], 'exist', 'skipOnError' => true, 'targetClass' => Registry::className(), 'targetAttribute' => ['id' => 'id']],
+            [['system_id', 'name'], 'string', 'max' => 255],
+            [['source_id'], 'exist', 'skipOnError' => true, 'targetClass' => Source::className(), 'targetAttribute' => ['source_id' => 'id']],
+            [['id'], 'exist', 'skipOnError' => true, 'targetClass' => Registry::className(), 'targetAttribute' => ['id' => 'id']],
         ];
     }
 
@@ -74,7 +55,6 @@ class Asset extends \canis\db\ActiveRecordRegistry
             'id' => 'ID',
             'source_id' => 'Source ID',
             'system_id' => 'System ID',
-            'type' => 'Type',
             'name' => 'Name',
             'data' => 'Data',
             'active' => 'Active',
@@ -89,5 +69,13 @@ class Asset extends \canis\db\ActiveRecordRegistry
     public function getSource()
     {
         return $this->hasOne(Source::className(), ['id' => 'source_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getId0()
+    {
+        return $this->hasOne(Registry::className(), ['id' => 'id']);
     }
 }

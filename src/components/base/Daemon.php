@@ -132,7 +132,8 @@ class Daemon extends DaemonBase
         $tickCallback = [$this, 'tickCallback'];
         $ticks = 0;
         $self = $this;
-        $timer = $this->loop->addPeriodicTimer(.005, function() use ($self, $headId, $limitPerTick, $tickCallback, &$ticks, &$timer) {
+        $exitStatus = 0;
+        $timer = $this->loop->addPeriodicTimer(.005, function() use ($self, $headId, $limitPerTick, $tickCallback, &$exitStatus, &$ticks, &$timer) {
             $ticks++;
             $sensorsToCheck = Sensor::find()->where(['and', ['active' => 1], '[[next_check]] <= "' . date("Y-m-d G:i:s") .'"'])->orderBy(['next_check' => SORT_ASC])->limit($limitPerTick)->all();
             $skipCount = 0;
@@ -144,13 +145,14 @@ class Daemon extends DaemonBase
                     // echo "Another head is checking {$sensor->id}...".PHP_EOL; flush();
                     continue;
                 }
-                // echo "{$headId} checking {$sensor->id}...".PHP_EOL; flush();
+                //  echo "{$headId} checking {$sensor->id}...".PHP_EOL; flush();
                 if(!$sensor->dataObject->check($self->loop)) {
                     $sleepAfter = true;
                 }
             }
             if ($skipCount === $limitPerTick) {
                 $self->loop->cancelTimer($timer);
+                $exitStatus = 1;
             }
             if (call_user_func($tickCallback, $ticks)) {
                 $self->loop->cancelTimer($timer);
@@ -160,5 +162,6 @@ class Daemon extends DaemonBase
             }
         });
         $this->loop->run();
+        Yii::$app->end($exitStatus);
     }
 }

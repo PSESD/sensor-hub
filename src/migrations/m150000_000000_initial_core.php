@@ -15,19 +15,34 @@ class m150000_000000_initial_core extends \canis\db\Migration
         $this->db->createCommand()->checkIntegrity(false)->execute();
         $this->db->createCommand('ALTER DATABASE '. CANIS_APP_DATABASE_DBNAME .' charset=utf8mb4')->execute();
 
-        // source
-        $this->dropExistingTable('source');
-        $this->createTable('source', [
+        // provider
+        $this->dropExistingTable('provider');
+        $this->createTable('provider', [
             'id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY',
             'system_id' => 'string NOT NULL',
-            'name' => 'string NOT NULL',
             'data' => 'longblob DEFAULT NULL',
             'active' => 'bool NOT NULL DEFAULT 0',
             'last_check' => 'datetime DEFAULT NULL',
             'created' => 'datetime DEFAULT NULL',
             'modified' => 'datetime DEFAULT NULL'
         ]);
-        $this->addForeignKey('sourceRegistry', 'source', 'id', 'registry', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey('sourceRegistry', 'provider', 'id', 'registry', 'id', 'CASCADE', 'CASCADE');
+
+
+        // server
+        $this->dropExistingTable('server');
+        $this->createTable('server', [
+            'id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY',
+            'source_id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL',
+            'system_id' => 'string NOT NULL',
+            'name' => 'string NOT NULL',
+            'data' => 'longblob DEFAULT NULL',
+            'active' => 'bool NOT NULL DEFAULT 0',
+            'created' => 'datetime DEFAULT NULL',
+            'modified' => 'datetime DEFAULT NULL'
+        ]);
+        $this->addForeignKey('serverRegistry', 'server', 'id', 'registry', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey('serverSource', 'server', 'source_id', 'source', 'id', 'CASCADE', 'CASCADE');
 
         // site
         $this->dropExistingTable('site');
@@ -44,21 +59,50 @@ class m150000_000000_initial_core extends \canis\db\Migration
         $this->addForeignKey('siteRegistry', 'site', 'id', 'registry', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey('siteSource', 'site', 'source_id', 'source', 'id', 'CASCADE', 'CASCADE');
 
-        // asset
-        $this->dropExistingTable('asset');
-        $this->createTable('asset', [
+        // service
+        $this->dropExistingTable('service');
+        $this->createTable('service', [
             'id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY',
-            'source_id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL',
+            'object_id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL',
+            'system_id' => 'string NOT NULL',
+            'name' => 'string NOT NULL',
+            'data' => 'longblob DEFAULT NULL',
+            'created' => 'datetime DEFAULT NULL',
+            'modified' => 'datetime DEFAULT NULL'
+        ]);
+        $this->addForeignKey('serviceRegistry', 'service', 'id', 'registry', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey('serviceObject', 'service', 'object_id', 'registry', 'id', 'CASCADE', 'CASCADE');
+
+         // service_reference
+        $this->dropExistingTable('service_reference');
+        $this->createTable('service_reference', [
+            'id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY',
+            'object_id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL',
+            'service_id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL',
+            'type' => 'ENUM(\'binding\', \'connection\', \'other\') DEFAULT NULL',
+            'data' => 'longblob DEFAULT NULL',
+            'created' => 'datetime DEFAULT NULL',
+            'modified' => 'datetime DEFAULT NULL'
+        ]);
+        $this->addForeignKey('siteReferenceRegistry', 'service_reference', 'id', 'registry', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey('siteReferenceObject', 'service_reference', 'object_id', 'registry', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey('siteReferenceService', 'service_reference', 'service_id', 'service', 'id', 'CASCADE', 'CASCADE');
+
+
+        // resource
+        $this->dropExistingTable('resource');
+        $this->createTable('resource', [
+            'id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY',
+            'object_id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL',
             'system_id' => 'string NOT NULL',
             'type' => 'string NOT NULL',
             'name' => 'string NOT NULL',
             'data' => 'longblob DEFAULT NULL',
-            'active' => 'bool NOT NULL DEFAULT 0',
             'created' => 'datetime DEFAULT NULL',
             'modified' => 'datetime DEFAULT NULL'
         ]);
-        $this->addForeignKey('assetRegistry', 'asset', 'id', 'registry', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey('assetSource', 'asset', 'source_id', 'source', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey('resourceRegistry', 'resource', 'id', 'registry', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey('resourceObject', 'resource', 'object_id', 'object', 'id', 'CASCADE', 'CASCADE');
 
         // sensor
         $this->dropExistingTable('sensor');
@@ -98,6 +142,19 @@ class m150000_000000_initial_core extends \canis\db\Migration
         $this->createIndex('sensorEventCreated', 'sensor_event', 'created', false);
         $this->createIndex('sensorEventCreatedSensor', 'sensor_event', 'sensor_id,created', false);
         $this->addForeignKey('sensorEventSensor', 'sensor_event', 'sensor_id', 'sensor', 'id', 'CASCADE', 'CASCADE');
+
+
+        // sensor_data
+        $this->dropExistingTable('sensor_data');
+        $this->createTable('sensor_data', [
+            'id' => 'bigint unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY',
+            'sensor_id' => 'char(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL',
+            'value' => 'decimal(10, 2) NOT NULL',
+            'created' => 'datetime DEFAULT NULL'
+        ]);
+        $this->createIndex('sensorDataSensor', 'sensor_data', 'sensor_id', false);
+        $this->createIndex('sensorDataSensorCreated', 'sensor_data', 'sensor_id,created', false);
+        $this->addForeignKey('sensorDataSensor', 'sensor_data', 'sensor_id', 'sensor', 'id', 'CASCADE', 'CASCADE');
 
         return true;
     }

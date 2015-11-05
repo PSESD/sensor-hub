@@ -263,6 +263,16 @@ abstract class Instance
         return ['data' => $response, 'error' => false, 'responseCode' => (int) $curl->responseCode];
     }
 
+    public function initialize()
+    {
+        return false;
+    }
+
+    public function cleanObject()
+    {
+
+    }
+
     protected function loadObject($config, $interfaceName)
     {
     	if (!isset($config['class']) || !class_exists($config['class'])) {

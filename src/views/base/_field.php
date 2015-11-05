@@ -4,7 +4,7 @@ use yii\helpers\Html;
 $baseDataId = Html::getInputId($model, 'data');
 $baseDataName = Html::getInputName($model, 'data');
 
-$value = isset($model->dataObject->attributes[$id]) ? $model->dataObject->attributes[$id] : null;
+$value = isset($instance->attributes[$id]) ? $instance->attributes[$id] : null;
 $fieldId = $baseDataId . '_' . $id;
 $fieldName = $baseDataName . '[' . $id .']';
 if (empty($field['full'])) {
