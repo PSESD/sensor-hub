@@ -5,14 +5,25 @@
  * @copyright Copyright (c) 2015 Canis
  * @license http://canis.io/license/
  */
-namespace canis\sensorHub\components\sensors;
+namespace canis\sensorHub\components\instances;
 
 use Yii;
 use canis\broadcaster\eventTypes\EventType;
 use canis\sensors\providers\ProviderInterface;
 
-class AssetInstance extends Instance
+class ResourceInstance extends Instance
 {
+    public function getObjectType()
+    {
+        return 'resource';
+    }
+
+    public function getComponentPackage()
+    {
+        $c = [];
+        return $c;
+    }
+
 	static public function collectEventTypes()
     {
     	$events = [];

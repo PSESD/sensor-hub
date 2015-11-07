@@ -5,28 +5,28 @@ namespace canis\sensorHub\models;
 use Yii;
 
 /**
- * This is the model class for table "service_reference".
+ * This is the model class for table "resource_reference".
  *
  * @property string $id
  * @property string $object_id
- * @property string $service_id
+ * @property string $resource_id
  * @property string $type
  * @property resource $data
  * @property string $created
  * @property string $modified
  *
- * @property Service $service
+ * @property Resource $resource
  * @property Registry $object
  * @property Registry $id0
  */
-class ServiceReference extends \canis\db\ActiveRecordRegistry
+class ResourceReference extends \canis\db\ActiveRecordRegistry
 {
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'service_reference';
+        return 'resource_reference';
     }
 
     /**
@@ -53,11 +53,11 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
     public function rules()
     {
         return [
-            [['object_id', 'service_id'], 'required'],
+            [['object_id', 'resource_id'], 'required'],
             [['type', 'data'], 'string'],
             [['created', 'modified'], 'safe'],
-            [['id', 'object_id', 'service_id'], 'string', 'max' => 36],
-            [['service_id'], 'exist', 'skipOnError' => true, 'targetClass' => Service::className(), 'targetAttribute' => ['service_id' => 'id']],
+            [['id', 'object_id', 'resource_id'], 'string', 'max' => 36],
+            [['resource_id'], 'exist', 'skipOnError' => true, 'targetClass' => Resource::className(), 'targetAttribute' => ['resource_id' => 'id']],
             [['object_id'], 'exist', 'skipOnError' => true, 'targetClass' => Registry::className(), 'targetAttribute' => ['object_id' => 'id']],
         ];
     }
@@ -70,7 +70,7 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
         return [
             'id' => 'ID',
             'object_id' => 'Object ID',
-            'service_id' => 'Service ID',
+            'resource_id' => 'Resource ID',
             'type' => 'Type',
             'data' => 'Data',
             'created' => 'Created',
@@ -81,9 +81,9 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getService()
+    public function getResource()
     {
-        return $this->hasOne(Service::className(), ['id' => 'service_id']);
+        return $this->hasOne(Resource::className(), ['id' => 'resource_id']);
     }
 
     /**
@@ -105,8 +105,8 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
     public function connectedModels()
     {
         $models = $this->dependentModels();
-        if (($serviceProvider = Registry::getObject($this->object_id))) {
-            $models['ServiceProvider'] = [$serviceProvider];
+        if (($resourceProvider = Registry::getObject($this->object_id))) {
+            $models['ResourceProvider'] = [$resourceProvider];
         }
         return $models;
     }

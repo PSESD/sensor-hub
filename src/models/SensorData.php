@@ -14,7 +14,7 @@ use Yii;
  *
  * @property Sensor $sensor
  */
-class SensorData extends \canis\db\ActiveRecordRegistry
+class SensorData extends \canis\db\ActiveRecord
 {
     /**
      * @inheritdoc

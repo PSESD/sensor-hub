@@ -13,6 +13,7 @@ use Yii;
  * @property string $type
  * @property string $name
  * @property resource $data
+ * @property integer $active
  * @property string $created
  * @property string $modified
  *
@@ -54,6 +55,7 @@ class Resource extends \canis\db\ActiveRecordRegistry
         return [
             [['object_id', 'system_id', 'type', 'name'], 'required'],
             [['data'], 'string'],
+            [['active'], 'integer'],
             [['created', 'modified'], 'safe'],
             [['id', 'object_id'], 'string', 'max' => 36],
             [['system_id', 'type', 'name'], 'string', 'max' => 255],
@@ -72,8 +74,15 @@ class Resource extends \canis\db\ActiveRecordRegistry
             'type' => 'Type',
             'name' => 'Name',
             'data' => 'Data',
+            'active' => 'Active',
             'created' => 'Created',
             'modified' => 'Modified',
         ];
+    }
+
+    public function connectedModels()
+    {
+        $models = $this->dependentModels();
+        return $models;
     }
 }

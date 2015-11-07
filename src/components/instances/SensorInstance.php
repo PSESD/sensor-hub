@@ -5,7 +5,7 @@
  * @copyright Copyright (c) 2015 Canis
  * @license http://canis.io/license/
  */
-namespace canis\sensorHub\components\sensors;
+namespace canis\sensorHub\components\instances;
 
 use Yii;
 use canis\broadcaster\eventTypes\EventType;
@@ -18,6 +18,19 @@ use canis\sensors\base\Sensor as BaseSensor;
 class SensorInstance extends Instance
 {
 	public $payload = false;
+
+    public function getObjectType()
+    {
+        return 'sensor';
+    }
+
+    public function getComponentPackage()
+    {
+        $c = [];
+        $collections = $this->collectObjects(1);
+        $c['sensors'] = $collections['sensor']->getPackage(1);
+        return $c;
+    }
 
 	static public function collectEventTypes()
     {

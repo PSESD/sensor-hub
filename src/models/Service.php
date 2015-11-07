@@ -93,4 +93,21 @@ class Service extends \canis\db\ActiveRecordRegistry
     {
         return $this->hasMany(ServiceReference::className(), ['service_id' => 'id']);
     }
+
+    public function dependentModels()
+    {
+        $models = [];
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id])->all();
+        $models['ServiceReference'] = ServiceReference::find()->where(['service_id' => $this->id])->all();
+        $models['Resource'] = Resource::find()->where(['object_id' => $this->id])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id])->all();
+        return $models;
+    }
+
+    public function connectedModels()
+    {
+        $models = $this->dependentModels();
+        return $models;
+    }
+
 }

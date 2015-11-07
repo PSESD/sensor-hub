@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "site".
  *
  * @property string $id
- * @property string $source_id
+ * @property string $provider_id
  * @property string $system_id
  * @property string $name
  * @property resource $data
@@ -16,7 +16,7 @@ use Yii;
  * @property string $created
  * @property string $modified
  *
- * @property Source $source
+ * @property Provider $source
  * @property Registry $id0
  */
 class Site extends \canis\db\ActiveRecordRegistry
@@ -53,13 +53,13 @@ class Site extends \canis\db\ActiveRecordRegistry
     public function rules()
     {
         return [
-            [['source_id', 'system_id', 'name'], 'required'],
+            [['provider_id', 'system_id', 'name'], 'required'],
             [['data'], 'string'],
             [['active'], 'integer'],
             [['created', 'modified'], 'safe'],
-            [['id', 'source_id'], 'string', 'max' => 36],
+            [['id', 'provider_id'], 'string', 'max' => 36],
             [['system_id', 'name'], 'string', 'max' => 255],
-            [['source_id'], 'exist', 'skipOnError' => true, 'targetClass' => Source::className(), 'targetAttribute' => ['source_id' => 'id']],
+            [['provider_id'], 'exist', 'skipOnError' => true, 'targetClass' => Provider::className(), 'targetAttribute' => ['provider_id' => 'id']],
         ];
     }
 
@@ -70,7 +70,7 @@ class Site extends \canis\db\ActiveRecordRegistry
     {
         return [
             'id' => 'ID',
-            'source_id' => 'Source ID',
+            'provider_id' => 'Provider ID',
             'system_id' => 'System ID',
             'name' => 'Name',
             'data' => 'Data',
@@ -80,12 +80,30 @@ class Site extends \canis\db\ActiveRecordRegistry
         ];
     }
 
+    public function dependentModels()
+    {
+        $models = [];
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id])->all();
+        $models['Service'] = Service::find()->where(['object_id' => $this->id])->all();
+        $models['ServiceReference'] = ServiceReference::find()->where(['object_id' => $this->id])->all();
+        $models['Resource'] = Resource::find()->where(['object_id' => $this->id])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id])->all();
+        return $models;
+    }
+
+    public function connectedModels()
+    {
+        $models = $this->dependentModels();
+        return $models;
+    }
+
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getSource()
+    public function getProvider()
     {
-        return $this->hasOne(Source::className(), ['id' => 'source_id']);
+        return $this->hasOne(Provider::className(), ['id' => 'provider_id']);
     }
 
 }

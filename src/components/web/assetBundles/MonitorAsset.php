@@ -10,14 +10,14 @@ namespace canis\sensorHub\components\web\assetBundles;
 
 use yii\web\AssetBundle;
 
-class SensorMonitorAsset extends AssetBundle
+class MonitorAsset extends AssetBundle
 {
-    public $sourcePath = '@canis/sensorHub/assets/sensor_monitor';
+    public $sourcePath = '@canis/sensorHub/assets/monitor';
     public $css = [
-        'css/canis.sensorMonitor.css',
+        'css/canis.monitor.css',
     ];
     public $js = [
-        'js/canis.sensorMonitor.js',
+        'js/canis.monitor.js',
     ];
     public $depends = [
         'canis\sensorHub\components\web\assetBundles\AppAsset'

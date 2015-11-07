@@ -5,7 +5,7 @@
  * @copyright Copyright (c) 2015 Canis
  * @license http://canis.io/license/
  */
-namespace canis\sensorHub\components\sensors;
+namespace canis\sensorHub\components\instances;
 
 use Yii;
 use canis\broadcaster\eventTypes\EventType;
@@ -14,6 +14,21 @@ use canis\sensors\base\Sensor as BaseSensor;
 
 class ProviderInstance extends Instance
 {
+    public function getObjectType()
+    {
+        return 'provider';
+    }
+
+    public function getComponentPackage()
+    {
+        $c = [];
+        $collections = $this->collectObjects(3);
+        $c['sensors'] = $collections['sensor']->getPackage(3);
+        $c['resources'] = $collections['resource']->getPackage(1);
+        $c['sites'] = $collections['site']->getPackage(1);
+        return $c;
+    }
+
 	static public function collectEventTypes()
     {
     	$events = [];
@@ -47,10 +62,12 @@ class ProviderInstance extends Instance
     	}
     }
 
-    public function initialize()
-    {
-        
-        return false;
+    public function initialize($log)
+    {   
+        $this->log = $log;
+        //\d($this->object);exit;
+        $result = $this->internalInitialize($this->object);
+        return $result;
     }
 
     protected function internalCheck($event)
@@ -95,6 +112,15 @@ class ProviderInstance extends Instance
     		$event->state = BaseSensor::STATE_ERROR;
     		return;
 		}
+        if (!$this->initialize(null)) {
+            $event->addError('Sensor provider could not be initialized.');
+            $event->notify = true;
+            $event->pause = '+1 day';
+            $event->state = BaseSensor::STATE_ERROR;
+            return;
+        }
+        $this->model->last_check = date("Y-m-d G:i:s");
+        $this->model->save();
     }
 
     public function validateSetup($scenario = 'create')
@@ -129,6 +155,11 @@ class ProviderInstance extends Instance
     		$this->setupErrors['url'] = 'Sensor provider could not be validated.';
     		return false;
 		}
+        $modelClass = get_class($this->model);
+        if ($modelClass::find()->where(['and', ['system_id' => $this->model->system_id], ['not', ['id' => $this->model->id]]])->count() > 0) {
+            $this->setupErrors['url'] = 'Sensor provider with same ID ('.$this->model->system_id.') already exists in the system.';
+            return false;
+        }
 		return true;	
     }
 

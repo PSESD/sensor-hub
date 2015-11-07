@@ -16,18 +16,18 @@ echo Nav::widget([
     'options' => ['class' => 'nav navbar-nav navbar-left'],
     'items' => [
         [
-            'label' => 'Sensors' ,
-            'url' => ['/sensor/index'],
+            'label' => 'Servers' ,
+            'url' => ['/server/index'],
             'visible' => !Yii::$app->user->isGuest
         ],
         [
-            'label' => 'Providers' ,
-            'url' => ['/provider/index'],
+            'label' => 'Sites' ,
+            'url' => ['/site/index'],
             'visible' => !Yii::$app->user->isGuest
         ],
         [
-            'label' => 'Assets' ,
-            'url' => ['/asset/index'],
+            'label' => 'Resources' ,
+            'url' => ['/resource/index'],
             'visible' => !Yii::$app->user->isGuest
         ],
         [

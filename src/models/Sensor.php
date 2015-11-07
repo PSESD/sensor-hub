@@ -85,6 +85,21 @@ class Sensor extends \canis\db\ActiveRecordRegistry
         ];
     }
 
+    public function dependentModels()
+    {
+        $models = [];
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id])->all();
+        $models['SensorData'] = SensorData::find()->where(['sensor_id' => $this->id])->all();
+        $models['SensorEvent'] = SensorEvent::find()->where(['sensor_id' => $this->id])->all();
+        return $models;
+    }
+
+    public function connectedModels()
+    {
+        $models = [];
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id])->all();
+        return $models;
+    }
 
     /**
      * @return \yii\db\ActiveQuery

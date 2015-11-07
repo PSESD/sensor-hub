@@ -25,10 +25,15 @@ echo Html::beginTag('div', ['class' => 'panel-body']);
 
 echo Html::beginTag('div', ['class' => 'list-group']);
 foreach ($tasks as $taskId => $task) {
+	$dataHandler = '';
+	if (!isset($task['url'])) {
+		$dataHandler = 'background';
+		$task['url'] = ['/admin/index', 'task' => $taskId];
+	}
     echo Html::a(
         Html::tag('h4', $task['title'], ['class' => 'list-group-item-heading']) .
         Html::tag('div', $task['description'], ['class' => 'list-group-item-text']),
-        ['/admin/index', 'task' => $taskId], ['class' => 'list-group-item', 'data-handler' => 'background']);
+        $task['url'], ['class' => 'list-group-item', 'data-handler' => $dataHandler]);
 }
 
 echo Html::endTag('div');

@@ -41,6 +41,11 @@ class AdminController extends Controller
         $tasks['view-cron-log']['title'] = 'View Cron Log';
         $tasks['view-cron-log']['description'] = 'View the cron log';
         $tasks['view-cron-log']['run'] = [$this, 'actionCronLog'];
+
+        $tasks['view-cron-log'] = [];
+        $tasks['view-cron-log']['title'] = 'Manage Sensor Providers';
+        $tasks['view-cron-log']['description'] = 'Manage the sensor providers';
+        $tasks['view-cron-log']['url'] = ['/admin/provider/index'];
         
         $tasks['view-daemon-log'] = [];
         $tasks['view-daemon-log']['title'] = 'View Daemon Log';

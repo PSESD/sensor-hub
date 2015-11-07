@@ -20,16 +20,6 @@ use Yii;
 class Provider extends \canis\db\ActiveRecordRegistry
 {
     protected $_initializeData;
-    protected $_isFirstInitialize = true;
-    public $initializationFailed = false;
-
-    public function init()
-    {
-        parent::init();
-        $this->on(\canis\db\ActiveRecord::EVENT_BEFORE_VALIDATE, [$this, 'prepInitializeData']);
-        $this->on(\canis\db\ActiveRecord::EVENT_AFTER_INSERT, [$this, 'initializeData']);
-        $this->on(\canis\db\ActiveRecord::EVENT_AFTER_UPDATE, [$this, 'initializeData']);
-    }
 
 
     /**
@@ -99,30 +89,51 @@ class Provider extends \canis\db\ActiveRecordRegistry
 
     public function getIntitializeData()
     {
+        // $idata = null;
+        // if (isset($this->_initializeData)) {
+        //     $this->_initializeData->model = $this;
+        //     $idata = clone $this->_initializeData;
+        // }
         return $this->_initializeData;
     }
 
-    public function prepInitializeData()
+    public function dependentModels()
     {
-        $this->_isFirstInitialize = $this->isNewRecord;
+        $models = [];
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id])->all();
+        $models['Server'] = Server::find()->where(['provider_id' => $this->id])->all();
+        $models['Resource'] = Resource::find()->where(['object_id' => $this->id])->all();
+        $models['Site'] = Site::find()->where(['provider_id' => $this->id])->all();
+        return $models;
     }
 
-    public function initializeData($event)
+    public function connectedModels()
+    {
+        $models = $this->dependentModels();
+        return $models;
+    }
+
+    public function initializeData($isFirstInitialize)
     {
         if (!isset($this->_initializeData)) {
-            return;
+            $this->getIntitializeData()->statusLog->addError('No initialization data');
+            return false;
         }
-        if (!$this->getIntitializeData()->initialize()) {
-            $this->initializationFailed = true;
+        //\d($this->getIntitializeData()->object); $this->delete();exit;
+        $this->dataObject = clone $this->getIntitializeData();
+        $this->dataObject->object = null;
+        //\d($this->getIntitializeData()->object->getSites());exit;
+        if (!$this->getIntitializeData()->initialize($this->getIntitializeData()->statusLog)) {
             if (!empty($this->_initializeData)) {
-                $this->getIntitializeData()->setupErrors['url'] = 'Unable to initialize provider!';
+                $this->getIntitializeData()->statusLog->addError('Unable to initialize provider!');
             }
-            if ($this->_isFirstInitialize) {
+            if ($isFirstInitialize) {
                 $this->delete();
             }
+            return false;
         } else {
             $this->dataObject = $this->getIntitializeData();
-            $this->dataObject->cleanObject();
+            return true;
         }
     }
 }
