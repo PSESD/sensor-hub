@@ -13,7 +13,7 @@ use canis\sensors\providers\ProviderInterface;
 
 class ResourceInstance extends Instance
 {
-    const COLLECT_DEPTH = 4;
+    const COLLECT_DEPTH = 5;
     
     public function getObjectType()
     {

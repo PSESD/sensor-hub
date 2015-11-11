@@ -612,10 +612,10 @@ abstract class Instance
     	return $this->model->save();
     }
 
-    public function getSimpleState($model)
+    public function getSimpleState()
     {
-        if ($model->hasMethod('getSimpleState')) {
-            return $model->getSimpleState();
+        if ($this->model->hasMethod('getSimpleState')) {
+            return $this->model->getSimpleState();
         }
         return 'default';
     }

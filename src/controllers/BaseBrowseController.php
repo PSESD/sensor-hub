@@ -17,6 +17,7 @@ use canis\sensorHub\models\Server;
 use canis\sensorHub\models\Resource;
 use canis\sensorHub\models\Registry;
 use canis\sensorHub\models\Sensor;
+use yii\helpers\ArrayHelper;
 
 abstract class BaseBrowseController extends Controller
 {
@@ -130,7 +131,12 @@ abstract class BaseBrowseController extends Controller
     	if (empty($_GET['type']) || !isset($children[$_GET['type']])) {
     		throw \yii\web\NotFoundHttpException("Object type not found");
     	}
-    	Yii::$app->response->params['objects'] = $children[$_GET['type']];
+        //\d($children[$_GET['type']]);exit;
+        Yii::$app->response->params['objects'] = $this->getObjects($children[$_GET['type']], $_GET['type'], $objectModel);
+        if (!empty($_GET['refresh'])) {
+            Yii::$app->response->data = ['objects' => Yii::$app->response->params['objects']];
+            return;
+        }
     	Yii::$app->response->params['objectType'] = $_GET['type'];
     	Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor .'\'s '.ucfirst($_GET['type']).'s', 'modalClass' => 'modal-sm', 'isForm' => false];
         Yii::$app->response->task = 'dialog';
@@ -147,15 +153,47 @@ abstract class BaseBrowseController extends Controller
     	}
     	Yii::$app->response->params['parentModel'] = $objectModel;
     	$object = $objectModel->dataObject;
-    	$children = $object->getParentObjects();
-    	if (empty($_GET['type']) || !isset($children[$_GET['type']])) {
+    	$parents = $object->getParentObjects();
+    	if (empty($_GET['type']) || !isset($parents[$_GET['type']])) {
     		throw \yii\web\NotFoundHttpException("Object type not found");
     	}
-    	Yii::$app->response->params['objects'] = $children[$_GET['type']];
-    	Yii::$app->response->params['objectType'] = $_GET['type'];
+    	Yii::$app->response->params['objects'] = $this->getObjects($parents[$_GET['type']], $_GET['type'], $objectModel);
+        if (!empty($_GET['refresh'])) {
+            Yii::$app->response->data = ['objects' => Yii::$app->response->params['objects']];
+            return;
+        }
     	Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor .'\'s '.ucfirst($_GET['type']).'s', 'modalClass' => 'modal-sm', 'isForm' => false];
         Yii::$app->response->task = 'dialog';
    		Yii::$app->response->view = '@canis/sensorHub/views/base/browse';
+    }
+
+    protected function getObjects($objects, $objectType, $parentModel)
+    {   
+        $all = [];
+        $categories = [];
+        $categories['service'] = ['service' => 'Provided Services', 'serviceReference' => 'Bound Services'];
+        $categories['resource'] = ['resource' => 'Provided Resources', 'resourceReference' => 'Used Resource'];
+        $categories['site'] = ['site' => 'Sites'];
+        $categories['server'] = ['server' => 'Servers'];
+        $categories['sensor'] = ['sensor' => 'Sensors'];
+        foreach ($categories[$objectType] as $categoryType => $categoryLabel) {
+            $category = ['label' => $categoryLabel, 'items' => []];
+            $depth = false;
+            if (!($parentModel instanceof Site) && in_array($categoryType, ['resourceReference', 'serviceReference'])) {
+                $depth = 1;
+            }
+            foreach ($objects->getAll($depth, $categoryType) as $model) {
+                $category['items'][$model->id] = [];
+                $category['items'][$model->id]['state'] = $model->dataObject->getSimpleState();;
+                $category['items'][$model->id]['label'] = $model->getContextualDescriptor($parentModel);
+                $category['items'][$model->id]['url'] = Url::to(['/'.$objectType.'/view', 'id' => $model->id, 'parent' => $parentModel->id, 'bare' => 1]);
+            }
+            if (!empty($category['items'])) {
+                ArrayHelper::multisort($category['items'], 'label');
+                $all[$categoryType] = $category;
+            }
+        }
+        return $all;
     }
 }
 ?>

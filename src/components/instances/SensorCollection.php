@@ -43,7 +43,7 @@ class SensorCollection extends Collection
 			$itemCount++;
 			$subitem = [];
 			$subitem['label'] = $model->getContextualDescriptor($this->model);
-			$subitem['state'] = $model->dataObject->getSimpleState($model);
+			$subitem['state'] = $model->dataObject->getSimpleState();
 			if ($subitem['state'] === 'danger') {
 				$hasDanger = true;
 			}
