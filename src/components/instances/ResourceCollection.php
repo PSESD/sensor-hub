@@ -14,16 +14,81 @@ use yii\helpers\Url;
 
 class ResourceCollection extends Collection
 {
-	public function getPackageItems($maxDepth = false, $objectType = false)
+	public function getParentPackageItems($maxDepth = false, $objectType = false)
+	{
+		$items = [];
+		return $items;
+	}
+
+	public function getChildPackageItems($maxDepth = false, $objectType = false)
 	{
 		$items = [];
 		$item = [];
+		$all = $this->getAll($maxDepth, $objectType);
 		$item['label'] = 'Resources';
-		$item['badge'] = count($this->getAll($maxDepth, $objectType));
-		if (!is_object($this->parentModel)) {
-			\d($this);exit;
+		$item['url'] = Url::to(['children', 'type' => 'resource', 'object' => $this->model->id]);
+		$item['background'] = true;
+		$item['subitems'] = [];
+
+		$item['subitems']['resources'] = ['label' => 'Provided Resources', 'subitems' => []];
+		$item['subitems']['resourceReferences'] = ['label' => 'Used Resources', 'subitems' => []];
+
+		$hasDanger = false;
+		$hasWarning = false;
+		$itemCount = 1;
+		$itemLimit = 3;
+		$allResources = $this->getAll($maxDepth, 'resource');
+		foreach ($allResources as $model) {
+			if ($itemCount > $itemLimit && count($allResources) !== $itemLimit) {
+				$item['subitems']['resources']['truncated'] = true;
+				break;
+			}
+			$itemCount++;
+			$subitem = [];
+			$subitem['label'] = $model->getContextualDescriptor($this->model);
+			$subitem['state'] = $model->dataObject->getSimpleState($model);
+			if ($subitem['state'] === 'danger') {
+				$hasDanger = true;
+			}
+			if ($subitem['state'] === 'warning') {
+				$hasWarning = true;
+			}
+			$item['subitems']['resources']['subitems'][$model->id] = $subitem;
 		}
-		$item['url'] = Url::to(['/resource', 'filter[object]' => $this->parentModel->id]);
+
+		$itemCount = 1;
+		$allReferencesRaw = $this->getAll($maxDepth, 'resourceReference');
+		$allReferences = [];
+		foreach ($allReferencesRaw as $model) {
+			$allReferences[$model->resource->id] = $model;
+		}
+		foreach ($allReferences as $model) {
+			if ($itemCount > $itemLimit && count($allReferences) !== $itemLimit) {
+				$item['subitems']['resourceReferences']['truncated'] = true;
+				break;
+			}
+			$itemCount++;
+			$subitem = [];
+			$subitem['label'] = $model->getContextualDescriptor($this->model);
+			$subitem['state'] = $model->dataObject->getSimpleState($model);
+			if ($subitem['state'] === 'danger') {
+				$hasDanger = true;
+			}
+			if ($subitem['state'] === 'warning') {
+				$hasWarning = true;
+			}
+			$item['subitems']['resourceReferences']['subitems'][$model->resource->id] = $subitem;
+		}
+
+
+		$item['badge'] = count($allResources) + count($allReferences);
+		if (empty($item['subitems']['resources']['subitems'])) {
+			unset($item['subitems']['resources']);
+		}
+		if (empty($item['subitems']['resourceReferences']['subitems'])) {
+			unset($item['subitems']['resourceReferences']);
+		}
+		$item['state'] = 'primary';
 		$items['resource-button'] = $item;
 		return $items;
 	}

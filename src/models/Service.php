@@ -37,6 +37,11 @@ class Service extends \canis\db\ActiveRecordRegistry
         return false;
     }
 
+    public function getContextualDescriptor($parent = false)
+    {
+        return $this->descriptor;
+    }
+
     
     public function behaviors()
     {
@@ -83,7 +88,7 @@ class Service extends \canis\db\ActiveRecordRegistry
      */
     public function getObject()
     {
-        return $this->hasOne(Registry::className(), ['id' => 'object_id']);
+        return Registry::getObject($this->object_id);
     }
 
     /**
@@ -104,7 +109,15 @@ class Service extends \canis\db\ActiveRecordRegistry
         return $models;
     }
 
-    public function connectedModels()
+    public function parentModels()
+    {
+        $models = [];
+        $models['Server'] = Server::find()->where(['id' => $this->object_id])->all();
+        $models['Site'] = Site::find()->where(['id' => $this->object_id])->all();
+        return $models;
+    }
+
+    public function childModels()
     {
         $models = $this->dependentModels();
         return $models;

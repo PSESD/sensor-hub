@@ -17,6 +17,7 @@ use canis\sensors\base\Sensor as BaseSensor;
 
 class SensorInstance extends Instance
 {
+    const COLLECT_DEPTH = 1;
 	public $payload = false;
 
     public function getObjectType()
@@ -24,10 +25,20 @@ class SensorInstance extends Instance
         return 'sensor';
     }
 
+    public function getParentObjects()
+    {
+        return $this->collectParentObjects(static::COLLECT_DEPTH);
+    }
+
+    public function getChildObjects()
+    {
+        return $this->collectChildObjects(static::COLLECT_DEPTH);
+    }
+
     public function getComponentPackage()
     {
         $c = [];
-        $collections = $this->collectObjects(1);
+        $collections = $this->getChildObjects();
         $c['sensors'] = $collections['sensor']->getPackage(1);
         return $c;
     }
@@ -117,5 +128,15 @@ class SensorInstance extends Instance
             return $this->model->save();
         }
         return true;
+    }
+
+    public function getDataPoint()
+    {
+        return false;
+    }
+
+    public function hasDataPoint()
+    {
+        return false;
     }
 }

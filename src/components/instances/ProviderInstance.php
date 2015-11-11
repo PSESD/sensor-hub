@@ -14,15 +14,27 @@ use canis\sensors\base\Sensor as BaseSensor;
 
 class ProviderInstance extends Instance
 {
+    const COLLECT_DEPTH = 3;
+
     public function getObjectType()
     {
         return 'provider';
     }
 
+    public function getParentObjects()
+    {
+        return $this->collectParentObjects(static::COLLECT_DEPTH);
+    }
+
+    public function getChildObjects()
+    {
+        return $this->collectChildObjects(static::COLLECT_DEPTH);
+    }
+
     public function getComponentPackage()
     {
         $c = [];
-        $collections = $this->collectObjects(3);
+        $collections = $this->getChildObjects();
         $c['sensors'] = $collections['sensor']->getPackage(3);
         $c['resources'] = $collections['resource']->getPackage(1);
         $c['sites'] = $collections['site']->getPackage(1);

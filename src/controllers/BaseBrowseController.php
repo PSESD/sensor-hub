@@ -15,6 +15,7 @@ use canis\sensorHub\models\Instance;
 use canis\sensorHub\models\Site;
 use canis\sensorHub\models\Server;
 use canis\sensorHub\models\Resource;
+use canis\sensorHub\models\Registry;
 use canis\sensorHub\models\Sensor;
 
 abstract class BaseBrowseController extends Controller
@@ -89,6 +90,72 @@ abstract class BaseBrowseController extends Controller
     		$package['items'][$item->id] = $item->dataObject->package;
     	}
     	Yii::$app->response->data = $package;
+    }
+
+
+    public function actionView()
+    {
+        if (empty($_GET['id']) || !($objectModel = Registry::getObject($_GET['id']))) {
+            throw \yii\web\NotFoundHttpException("Object not found");
+        }
+        if (empty($_GET['parent']) || !($parentModel = Registry::getObject($_GET['parent']))) {
+            throw \yii\web\NotFoundHttpException("Object not found");
+        }
+        Yii::$app->response->params['objectModel'] = $objectModel;
+        Yii::$app->response->params['parentModel'] = $parentModel;
+        $object = $objectModel->dataObject;
+        $children = $object->getChildObjects();
+        
+        if (!empty($_GET['bare'])) {
+            $this->layout = false;
+        } else {
+            Yii::$app->response->params['objects'] = $children[$_GET['type']];
+            Yii::$app->response->params['objectType'] = $_GET['type'];
+            Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor .'\'s '.ucfirst($_GET['type']).'s', 'modalClass' => 'modal-sm', 'isForm' => false];
+            Yii::$app->response->task = 'dialog';
+        }
+        Yii::$app->response->view = '@canis/sensorHub/views/base/view';
+    }
+
+    public function actionChildren()
+    {
+    	$config = $this->config();
+    	$itemClass = $config['modelClass'];
+    	if (empty($_GET['object']) || !($objectModel = $itemClass::find()->where(['id' => $_GET['object']])->one())) {
+    		throw \yii\web\NotFoundHttpException("Object not found");
+    	}
+    	Yii::$app->response->params['parentModel'] = $objectModel;
+    	$object = $objectModel->dataObject;
+    	$children = $object->getChildObjects();
+    	if (empty($_GET['type']) || !isset($children[$_GET['type']])) {
+    		throw \yii\web\NotFoundHttpException("Object type not found");
+    	}
+    	Yii::$app->response->params['objects'] = $children[$_GET['type']];
+    	Yii::$app->response->params['objectType'] = $_GET['type'];
+    	Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor .'\'s '.ucfirst($_GET['type']).'s', 'modalClass' => 'modal-sm', 'isForm' => false];
+        Yii::$app->response->task = 'dialog';
+   		Yii::$app->response->view = '@canis/sensorHub/views/base/browse';
+    }
+
+
+    public function actionParents()
+    {
+    	$config = $this->config();
+    	$itemClass = $config['modelClass'];
+    	if (empty($_GET['object']) || !($objectModel = $itemClass::find()->where(['id' => $_GET['object']])->one())) {
+    		throw \yii\web\NotFoundHttpException("Object not found");
+    	}
+    	Yii::$app->response->params['parentModel'] = $objectModel;
+    	$object = $objectModel->dataObject;
+    	$children = $object->getParentObjects();
+    	if (empty($_GET['type']) || !isset($children[$_GET['type']])) {
+    		throw \yii\web\NotFoundHttpException("Object type not found");
+    	}
+    	Yii::$app->response->params['objects'] = $children[$_GET['type']];
+    	Yii::$app->response->params['objectType'] = $_GET['type'];
+    	Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor .'\'s '.ucfirst($_GET['type']).'s', 'modalClass' => 'modal-sm', 'isForm' => false];
+        Yii::$app->response->task = 'dialog';
+   		Yii::$app->response->view = '@canis/sensorHub/views/base/browse';
     }
 }
 ?>

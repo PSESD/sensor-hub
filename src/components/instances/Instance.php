@@ -37,6 +37,7 @@ abstract class Instance
     implements \canis\broadcaster\BroadcastableInterface
 {
     const EVENT_COLLECT_OBJECTS = 'collectObjects';
+
     public $collectObjectCacheTime = 3600;
 	public $model;
 	public $object;
@@ -83,19 +84,43 @@ abstract class Instance
         );
     }
 
-    public function collectObjects($maxDepth = false, $refresh = false)
+    public function collectParentObjects($maxDepth = false, $refresh = false)
     {
         //$refresh = true;
+        //exit;
         $cacheKey = [__CLASS__, __FUNCTION__, $this->model->id, $maxDepth];
         if (!$refresh && ($cache = Cacher::get($cacheKey))) {
             return $cache;
         }
         $event = new CollectEvent;
-        $event->addCollection('sensor', new SensorCollection(['parentModel' => $this->model]));
-        $event->addCollection('server', new ServerCollection(['parentModel' => $this->model]));
-        $event->addCollection('site', new SiteCollection(['parentModel' => $this->model]));
-        $event->addCollection(['resource', 'resourceReference'], new ResourceCollection(['parentModel' => $this->model]));
-        $event->addCollection(['service', 'serviceReference'], new ServiceCollection(['parentModel' => $this->model]));
+        $event->type = 'parents';
+        $event->addCollection('sensor', new SensorCollection(['model' => $this->model]));
+        $event->addCollection('server', new ServerCollection(['model' => $this->model]));
+        $event->addCollection('site', new SiteCollection(['model' => $this->model]));
+        $event->addCollection(['resource', 'resourceReference'], new ResourceCollection(['model' => $this->model]));
+        $event->addCollection(['service', 'serviceReference'], new ServiceCollection(['model' => $this->model]));
+
+        $event->maxDepth = $maxDepth;
+        $this->trigger(static::EVENT_COLLECT_OBJECTS, $event);
+        Cacher::set($cacheKey, $event->collections, $this->collectObjectCacheTime);
+        return $event->collections;
+    }
+
+
+    public function collectChildObjects($maxDepth = false, $refresh = false)
+    {
+        // $refresh = true;
+        $cacheKey = [__CLASS__, __FUNCTION__, $this->model->id, $maxDepth];
+        if (!$refresh && ($cache = Cacher::get($cacheKey))) {
+            return $cache;
+        }
+        $event = new CollectEvent;
+        $event->type = 'children';
+        $event->addCollection('sensor', new SensorCollection(['model' => $this->model]));
+        $event->addCollection('server', new ServerCollection(['model' => $this->model]));
+        $event->addCollection('site', new SiteCollection(['model' => $this->model]));
+        $event->addCollection(['resource', 'resourceReference'], new ResourceCollection(['model' => $this->model]));
+        $event->addCollection(['service', 'serviceReference'], new ServiceCollection(['model' => $this->model]));
 
         $event->maxDepth = $maxDepth;
         $this->trigger(static::EVENT_COLLECT_OBJECTS, $event);
@@ -105,21 +130,28 @@ abstract class Instance
 
     public function internalCollectObjects($event)
     {
-        $children = $this->model->connectedModels();
-        foreach ($children as $type => $models) {
+        if ($event->type === 'children') {
+            $modelTypes = $this->model->childModels();
+        } else {
+            $modelTypes = $this->model->parentModels();
+        }
+        $recurse = [];
+        foreach ($modelTypes as $type => $models) {
             foreach ($models as $model) {
                 if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \canis\sensors\base\BaseInterface)) {
                     continue;
                 }
-                //echo get_class($model) .':' . $model->id .'<br/>';
-                $event->pass($model);
-                if ($event->maxDepth === false || $event->maxDepth > $event->depth) {
-                    $event->depth++;
-                    $model->dataObject->trigger(static::EVENT_COLLECT_OBJECTS, $event);
-                    $event->depth--;
-                }
+                $event->pass($model, ['parent' => get_class($this->model) .':'. $this->model->id]);
+                $recurse[] = $model;
             }
         }
+        $event->depth++;
+        foreach ($recurse as $model) {
+            if ($event->maxDepth === false || $event->maxDepth > $event->depth) {
+                $model->dataObject->trigger(static::EVENT_COLLECT_OBJECTS, $event);
+            }
+        }
+        $event->depth--;
     }
 
     protected function internalFindModel(\canis\sensors\base\BaseInterface $object, $parentObject, $modelClass)
@@ -317,6 +349,8 @@ abstract class Instance
         return $models;
     }
 
+    abstract public function getChildObjects();
+    abstract public function getParentObjects();
     abstract public function getComponentPackage();
 
     public function getPackage()
@@ -326,10 +360,17 @@ abstract class Instance
         $package['descriptor'] = $this->model->descriptor;
         $package['subdescriptor'] = $this->model->subdescriptor;
         $package['components'] = $this->getComponentPackage();
-
-        $package['object'] = $this->object->getPackage();
+        $package['info'] = $this->getInfo();
+        
+        // $package['object'] = $this->object->getPackage();
         $package['attributes'] = $this->attributes;
         return $package;
+    }
+
+    public function getInfo()
+    {
+        $info = $this->object->getInfo();
+        return $info;
     }
 
     public static function getSensorObjectModelClassByName($objectName)
@@ -569,6 +610,14 @@ abstract class Instance
     {
         Yii::$app->db->ensureConnection();
     	return $this->model->save();
+    }
+
+    public function getSimpleState($model)
+    {
+        if ($model->hasMethod('getSimpleState')) {
+            return $model->getSimpleState();
+        }
+        return 'default';
     }
 }
 ?>

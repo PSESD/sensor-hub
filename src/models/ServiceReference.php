@@ -78,12 +78,30 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
         ];
     }
 
+    public function getDescriptor()
+    {
+        return $this->service->descriptor;
+    }
+
+    public function getContextualDescriptor($parent = false)
+    {
+        $extra = '';
+        $provider = $this->service->object;
+        if ($parent === $provider) {
+            $object = $this->object;
+            $extra = ' ('. $object->descriptor .')';
+        } else {
+            $extra = ' ('. $provider->descriptor .')';
+        }
+        return $this->descriptor . $extra;
+    }
+
     /**
      * @return \yii\db\ActiveQuery
      */
     public function getService()
     {
-        return $this->hasOne(Service::className(), ['id' => 'service_id']);
+        return Service::get($this->service_id);
     }
 
     /**
@@ -91,7 +109,7 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
      */
     public function getObject()
     {
-        return $this->hasOne(Registry::className(), ['id' => 'object_id']);
+        return Registry::getObject($this->object_id);
     }
     
     public function dependentModels()
@@ -102,7 +120,16 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
         return $models;
     }
 
-    public function connectedModels()
+    public function parentModels()
+    {
+        $models = [];
+        $models['Server'] = Server::find()->where(['id' => $this->object_id])->all();
+        $models['Site'] = Site::find()->where(['id' => $this->object_id])->all();
+        $models['Service'] = Service::find()->where(['id' => $this->service_id])->all();
+        return $models;
+    }
+
+    public function childModels()
     {
         $models = $this->dependentModels();
         if (($serviceProvider = Registry::getObject($this->object_id))) {

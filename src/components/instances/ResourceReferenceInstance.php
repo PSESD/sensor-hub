@@ -18,6 +18,17 @@ class ResourceReferenceInstance extends Instance
         return 'resourceReference';
     }
 
+    public function getParentObjects()
+    {
+        return $this->collectParentObjects(static::COLLECT_DEPTH);
+    }
+
+    public function getChildObjects()
+    {
+        return $this->collectChildObjects(static::COLLECT_DEPTH);
+    }
+
+
     public function getComponentPackage()
     {
         $c = [];

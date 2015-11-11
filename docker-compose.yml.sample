@@ -13,6 +13,7 @@ web:
   privileged: true
   cpu_shares: 512
   environment:
+    TZ: "America/Los_Angeles"
     VIRTUAL_HOST: "$HOST"
     NGINX_ERROR_LOG_LEVEL: "notice"
     DB_NAME: "sensorHub"
@@ -25,6 +26,7 @@ db:
   expose:
     - "3360"
   environment:
+    TZ: "America/Los_Angeles"
     DB_NAME: "sensorHub"
 cache:
   restart: always
@@ -33,3 +35,5 @@ cache:
     - "6379"
   expose:
     - "6379"
+  environment:
+    TZ: "America/Los_Angeles"

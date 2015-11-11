@@ -126,9 +126,7 @@ CanisItem.prototype.init = function() {
 	this.elements.$components = $("<div />", {'class': 'btn-group btn-group pull-right canis-components'}).appendTo(this.elements.$titleContainer);
 	this.elements.$title = $("<span />", {'class': ''}).appendTo(this.elements.$titleContainer);
 	this.elements.$titleBuffer = $("<span />", {'class': ''}).html(' ').appendTo(this.elements.$titleContainer);
-	this.elements.$info = $("<div />", {'class': 'list-group-item-text'}).appendTo(this.elements.$canvas);
-	
-	this.elements.$serviceStatus = $("<div />", {'class': 'canis-item-service-status'}).hide().appendTo(this.elements.$info);
+	this.elements.$infoIcon = $("<span />", {'class': 'text-primary fa fa-info-circle'}).appendTo(this.elements.$titleContainer).hide();
 }
 
 CanisItem.prototype.setState = function(state) {
@@ -174,6 +172,30 @@ CanisItem.prototype.updateItemActions = function() {
 	}
 };
 
+CanisItem.prototype.updateInfo = function() {
+	if (_.isEmpty(this.item.info)) {
+		this.elements.$infoIcon.hide();
+	} else {
+		var popoverOptions = {};
+		popoverOptions.placement = 'bottom';
+		popoverOptions.content = $("<table />", {'class': 'table table-striped'});
+		popoverOptions.html = true;
+		popoverOptions.container = "body";
+		popoverOptions.trigger = 'hover';
+		jQuery.each(this.item.info, function(label, value) {
+			var $row = $("<tr />").appendTo(popoverOptions.content);
+			$("<th />").html(label).appendTo($row);
+			$("<td />").html(value).appendTo($row);
+		});
+		popoverOptions.content = popoverOptions.content[0].outerHTML;
+		if (this.elements.$infoIcon.data('bs.popover') !== undefined) {
+			this.elements.$infoIcon.data('bs.popover').options.content = popoverOptions.content
+		} else {
+			this.elements.$infoIcon.show().popover(popoverOptions).on("show.bs.popover", function(){ $(this).data("bs.popover").tip().css({maxWidth: "400px"}); });
+		}
+	}
+};
+
 CanisItem.prototype.updateWebActions = function() {
 	var _this = this;
 	return;
@@ -206,25 +228,143 @@ CanisItem.prototype.updateWebActions = function() {
 
 CanisItem.prototype.updateComponents = function() {
 	var _this = this;
-	this.elements.$components.html('');
+	if (this.elements.$components.elements === undefined) {
+		this.elements.$components.elements = {};
+	}
 	if (!this.item.components) { return; }
+	if (_this.elements.$components.elements.$popoverContainer === undefined) {
+		_this.elements.$components.elements.$popoverContainer = $("<div />").hide().appendTo($("body"));
+	}
 	jQuery.each(this.item.components, function(id, component) {
 		jQuery.each(component.items, function(cid, item) {
 			if (item.state === undefined) {
-				item.state = 'default';
+				item.state = 'primary';
 			}
-			var $a = $('<a />', {'href': item.url, 'class': 'btn btn-'+item.state}).html(item.label).appendTo(_this.elements.$components);
+			var key = id+'-'+cid;
+			if (_this.elements.$components.elements[key] === undefined) {
+				_this.elements.$components.elements[key] = {};
+			}
+			if (_this.elements.$components.elements[key].$a === undefined) {
+				_this.elements.$components.elements[key].$a = $('<a />').appendTo(_this.elements.$components);
+			}
+			if (_this.elements.$components.elements[key].$label === undefined) {
+				_this.elements.$components.elements[key].$label = $('<span />').appendTo(_this.elements.$components.elements[key].$a);
+			}
+			_this.elements.$components.elements[key].$a.attr({'href': item.url, 'class': 'btn btn-'+item.state});
+			_this.elements.$components.elements[key].$label.html(item.label);
+
 			if (item.attributes !== undefined) {
-				$a.attr(item.attributes);
+				_this.elements.$components.elements[key].$a.attr(item.attributes);
 			}
+			if (item.background && item.background === true) {
+				_this.elements.$components.elements[key].$a.attr({'data-handler': 'background'});
+			}
+
 			if (item.badge !== undefined) {
-				$a.html($a.html() + ' ');
-				var $badge = $('<span />', {'class': 'badge'}).html(item.badge).appendTo($a);
+				if (_this.elements.$components.elements[key].$badge === undefined) {
+					_this.elements.$components.elements[key].$badge = $('<span />', {'class': 'badge'}).appendTo(_this.elements.$components.elements[key].$a);
+				}
+				_this.elements.$components.elements[key].$badge.show().html(item.badge);
+			} else if (_this.elements.$components.elements[key].$badge !== undefined) {
+				_this.elements.$components.elements[key].$badge.hide();
+			}
+			if (_this.elements.$components.elements[key].$popover === undefined) {
+				_this.elements.$components.elements[key].$popover = $('<div />').appendTo(_this.elements.$components.elements.$popoverContainer);
+			}
+			if (item.subitems !== undefined && !_.isEmpty(item.subitems)) {
+				_this.generateList(item.subitems, _this.elements.$components.elements[key].$popover, item.truncated);
+
+				var popoverOptions = {};
+				popoverOptions.placement = 'bottom';
+				popoverOptions.content = _this.elements.$components.elements[key].$popover[0].outerHTML;
+				popoverOptions.html = true;
+				popoverOptions.container = "body";
+				popoverOptions.trigger = 'hover';
+				if (_this.elements.$components.elements[key].$a.data('bs.popover') !== undefined) {
+					_this.elements.$components.elements[key].$a.data('bs.popover').options.content = popoverOptions.content;
+				} else {
+					_this.elements.$components.elements[key].$a.popover(popoverOptions).on("show.bs.popover", function(){ $(this).data("bs.popover").tip().css({maxWidth: "400px"}); });
+				}
+			} else {
+				if (_this.elements.$components.elements[key].$a.data('bs.popover') !== undefined) {
+					_this.elements.$components.elements[key].$a.popover('destroy');
+				}
 			}
 		});
 	});
 };
 
+CanisItem.prototype.generateList = function(list, $parent, truncated, label) {
+	var parentItems = $parent.data('items');
+	if (!parentItems) {
+		parentItems = {};
+	}
+	if (truncated === undefined) {
+		truncated = false;
+	}
+	if (parentItems.$childList === undefined) {
+		parentItems.$childList = $("<div />", {'class': 'list-group'}).appendTo($parent);
+	}
+	if (parentItems.$childListLabel === undefined) {
+		parentItems.$childListLabel = $("<div />", {'class': 'list-group-item disabled'}).hide().appendTo(parentItems.$childList);
+	}
+	if (label !== undefined) {
+		parentItems.$childListLabel.show().html(label);
+	} else {
+		parentItems.$childListLabel.hide();
+	}
+	var self = this;
+	jQuery.each(list, function (index, item) {
+		if (parentItems[index] === undefined) {
+			parentItems[index] = item;
+			parentItems[index].elements = {};
+		}
+
+		if (parentItems[index].elements.$item === undefined) {
+			parentItems[index].elements.$item = $("<div />", {'class': ''}).appendTo(parentItems.$childList);
+		}
+		
+		if (item.subitems !== undefined && !_.isEmpty(item.subitems)) {
+			self.generateList(item.subitems, parentItems[index].elements.$item, item.truncated, item.label);
+			return true;
+		}
+		parentItems[index].elements.$item.addClass('list-group-item');
+
+
+		if (parentItems[index].elements.$label === undefined) {
+			parentItems[index].elements.$label = $("<h5 />", {'class': 'list-group-item-heading'}).appendTo(parentItems[index].elements.$item);
+		}
+		if (parentItems[index].elements.$labelSpan === undefined) {
+			parentItems[index].elements.$labelSpan = $("<span />").appendTo(parentItems[index].elements.$label);
+		}
+		parentItems[index].elements.$labelSpan.html(item.label);
+
+		parentItems[index].elements.$item.removeClass('list-group-item-success list-group-item-info list-group-item-danger list-group-item-warning');
+		if (item.state !== undefined) {
+			parentItems[index].elements.$item.addClass('list-group-item-' + item.state);
+		}
+
+		if (item.badge !== undefined) {
+			if (parentItems[index].elements.$badge === undefined) {
+				parentItems[index].elements.$badge = $("<span />", {'class': 'badge'}).appendTo(parentItems[index].elements.$label);
+			}
+			parentItems[index].elements.$badge.show().html(item.badge);
+		} else if (parentItems[index].elements.$badge !== undefined) {
+			parentItems[index].elements.$badge.hide();
+		}
+	});
+	if (truncated) {
+		if (parentItems.$truncated === undefined) {
+			parentItems.$truncated = $("<div />", {'class': 'list-group-item list-group-truncated'}).html('<span class="fa fa-ellipsis-h"></span>').appendTo(parentItems.$childList);
+		}
+		parentItems.$truncated.show();
+	} else {
+		if (parentItems.$truncated !== undefined) {
+			parentItems.$truncated.hide();
+		}
+	}
+	$parent.data('items', parentItems);
+};
 CanisItem.prototype.show = function() {
 	this.elements.$canvas.show();
 };
@@ -237,8 +377,8 @@ CanisItem.prototype.updateUptime = function() {
 
 CanisItem.prototype.update = function(item) {
 	this.item = item;
-	this.elements.$title.html(item.object.name);
-	
+	this.elements.$title.html(item.descriptor);
+	this.updateInfo();
 	// this.updateWebActions();
 	// this.updateItemActions();
 	// this.updateServices();

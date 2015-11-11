@@ -12,6 +12,7 @@ use Yii;
 
 class CollectEvent extends \yii\base\Event
 {
+	public $type;
 	public $maxDepth = true;
 	public $depth = 1;
 	protected $_collections = [];
@@ -30,6 +31,7 @@ class CollectEvent extends \yii\base\Event
 			}
 			return $this;
 		}
+		$collection->type = $this->type;
 		$this->_collections[$objectType] = $collection;
 		return $this;
 	}
@@ -42,13 +44,13 @@ class CollectEvent extends \yii\base\Event
 		return $this->_collections[$objectType];
 	}
 
-	public function pass($model)
+	public function pass($model, $data = [])
 	{
 		$object = $model->dataObject;
 		$objectType = $object->getObjectType();
 		if (!isset($this->_handled[$model->id])) {
 			if (($collection = $this->getCollection($objectType))) {
-				$collection->add($this->depth, $objectType, $model);
+				$collection->add($this->depth, $objectType, $model, $data);
 			}
 			$this->_handled[$model->id] = $objectType .':'. $object->object->id;
 		}

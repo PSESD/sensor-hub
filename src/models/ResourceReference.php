@@ -62,6 +62,16 @@ class ResourceReference extends \canis\db\ActiveRecordRegistry
         ];
     }
 
+    public function getDescriptor()
+    {
+        return $this->resource->descriptor;
+    }
+
+    public function getContextualDescriptor($parent = false)
+    {
+        return $this->descriptor;
+    }
+    
     /**
      * @inheritdoc
      */
@@ -83,7 +93,7 @@ class ResourceReference extends \canis\db\ActiveRecordRegistry
      */
     public function getResource()
     {
-        return $this->hasOne(Resource::className(), ['id' => 'resource_id']);
+        return Resource::get($this->resource_id);
     }
 
     /**
@@ -91,18 +101,29 @@ class ResourceReference extends \canis\db\ActiveRecordRegistry
      */
     public function getObject()
     {
-        return $this->hasOne(Registry::className(), ['id' => 'object_id']);
+        return Registry::getObject($this->object_id);
     }
     
     public function dependentModels()
     {
         $models = [];
-        $models['Resource'] = Resource::find()->where(['object_id' => $this->id])->all();
-        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id])->all();
+        $models['Resource'] = Resource::find()->where(['id' => $this->object_id])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['id' => $this->object_id])->all();
         return $models;
     }
 
-    public function connectedModels()
+    public function parentModels()
+    {
+        $models = [];
+        $models['Sensor'] = Sensor::find()->where(['id' => $this->object_id])->all();
+        $models['Service'] = Service::find()->where(['id' => $this->object_id])->all();
+        $models['ServiceReference'] = ServiceReference::find()->where(['id' => $this->object_id])->all();
+        $models['Server'] = Server::find()->where(['id' => $this->object_id])->all();
+        $models['Site'] = Site::find()->where(['id' => $this->object_id])->all();
+        return $models;
+    }
+
+    public function childModels()
     {
         $models = $this->dependentModels();
         if (($resourceProvider = Registry::getObject($this->object_id))) {
@@ -110,5 +131,7 @@ class ResourceReference extends \canis\db\ActiveRecordRegistry
         }
         return $models;
     }
+
+
 }
 

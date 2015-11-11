@@ -37,6 +37,10 @@ class Site extends \canis\db\ActiveRecordRegistry
         return false;
     }
 
+    public function getContextualDescriptor($parent = false)
+    {
+        return $this->descriptor;
+    }
     
     public function behaviors()
     {
@@ -91,7 +95,13 @@ class Site extends \canis\db\ActiveRecordRegistry
         return $models;
     }
 
-    public function connectedModels()
+    public function parentModels()
+    {
+        $models = [];
+        return $models;
+    }
+
+    public function childModels()
     {
         $models = $this->dependentModels();
         return $models;

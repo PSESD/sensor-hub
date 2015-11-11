@@ -10,11 +10,11 @@ namespace canis\sensorHub\controllers;
 
 use Yii;
 
-class SensorController extends BaseBrowseController
+class ServiceController extends BaseBrowseController
 {
 	public function getTopObjectId()
 	{
-		return 'sensor';
+		return 'service';
 	}
 }
 ?>

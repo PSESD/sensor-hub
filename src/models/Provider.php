@@ -22,6 +22,11 @@ class Provider extends \canis\db\ActiveRecordRegistry
     protected $_initializeData;
 
 
+    public function getContextualDescriptor($parent = false)
+    {
+        return $this->descriptor;
+    }
+
     /**
      * @inheritdoc
      */

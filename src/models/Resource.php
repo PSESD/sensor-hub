@@ -21,6 +21,8 @@ use Yii;
  */
 class Resource extends \canis\db\ActiveRecordRegistry
 {
+    public $descriptorField = 'name';
+    
     /**
      * @inheritdoc
      */
@@ -80,9 +82,26 @@ class Resource extends \canis\db\ActiveRecordRegistry
         ];
     }
 
-    public function connectedModels()
+    public function parentModels()
+    {
+        $models = [];
+        $models['Sensor'] = Sensor::find()->where(['id' => $this->object_id])->all();
+        $models['Service'] = Service::find()->where(['id' => $this->object_id])->all();
+        $models['ServiceReference'] = ServiceReference::find()->where(['id' => $this->object_id])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['resource_id' => $this->id])->all();
+        $models['Server'] = Server::find()->where(['id' => $this->object_id])->all();
+        $models['Site'] = Site::find()->where(['id' => $this->object_id])->all();
+        return $models;
+    }
+
+    public function childModels()
     {
         $models = $this->dependentModels();
         return $models;
+    }
+
+    public function getContextualDescriptor($parent = false)
+    {
+        return $this->descriptor;
     }
 }

@@ -13,10 +13,23 @@ use canis\sensors\providers\ProviderInterface;
 
 class ServiceReferenceInstance extends Instance
 {
+    const COLLECT_DEPTH = 3;
+    
     public function getObjectType()
     {
         return 'serviceReference';
     }
+
+    public function getParentObjects()
+    {
+        return $this->collectParentObjects(static::COLLECT_DEPTH);
+    }
+
+    public function getChildObjects()
+    {
+        return $this->collectChildObjects(static::COLLECT_DEPTH);
+    }
+
 
     public function getComponentPackage()
     {

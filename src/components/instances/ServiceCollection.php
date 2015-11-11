@@ -14,13 +14,82 @@ use yii\helpers\Url;
 
 class ServiceCollection extends Collection
 {
-	public function getPackageItems($maxDepth = false, $objectType = false)
+	public function getParentPackageItems($maxDepth = false, $objectType = false)
+	{
+		$items = [];
+		return $items;
+	}
+
+	public function getChildPackageItems($maxDepth = false, $objectType = false)
 	{
 		$items = [];
 		$item = [];
+		$all = $this->getAll($maxDepth, $objectType);
 		$item['label'] = 'Services';
-		$item['badge'] = count($this->getAll($maxDepth, $objectType));
-		$item['url'] = Url::to(['/service', 'filter[object]' => $this->parentModel->id]);
+		$item['url'] = Url::to(['children', 'type' => 'service', 'object' => $this->model->id]);
+		$item['background'] = true;
+		$item['subitems'] = [];
+		$item['subitems']['services'] = ['label' => 'Provided Services', 'subitems' => []];
+		$item['subitems']['serviceReferences'] = ['label' => 'Bound Services', 'subitems' => []];
+
+		$hasDanger = false;
+		$hasWarning = false;
+		$itemCount = 1;
+		$itemLimit = 3;
+		$allServices = $this->getAll($maxDepth, 'service');
+		foreach ($allServices as $model) {
+			if ($itemCount > $itemLimit && count($allServices) !== $itemLimit) {
+				$item['subitems']['services']['truncated'] = true;
+				break;
+			}
+			$itemCount++;
+			$subitem = [];
+			$subitem['label'] = $model->getContextualDescriptor($this->model);
+			$subitem['state'] = $model->dataObject->getSimpleState($model);
+			if ($subitem['state'] === 'danger') {
+				$hasDanger = true;
+			}
+			if ($subitem['state'] === 'warning') {
+				$hasWarning = true;
+			}
+			$item['subitems']['services']['subitems'][$model->id] = $subitem;
+		}
+
+		$itemCount = 1;
+		$allReferencesRaw = $this->getAll($maxDepth, 'serviceReference');
+		$allReferences = [];
+		foreach ($allReferencesRaw as $model) {
+			$allReferences[$model->service_id] = $model;
+		}
+		foreach ($allReferences as $model) {
+			if ($itemCount > $itemLimit && count($allReferences) !== $itemLimit) {
+				$item['subitems']['serviceReferences']['truncated'] = true;
+				break;
+			}
+			$itemCount++;
+			$subitem = [];
+			$subitem['label'] = $model->getContextualDescriptor($this->model);
+			$subitem['state'] = $model->dataObject->getSimpleState($model);
+			if ($subitem['state'] === 'danger') {
+				$hasDanger = true;
+			}
+			if ($subitem['state'] === 'warning') {
+				$hasWarning = true;
+			}
+			$item['subitems']['serviceReferences']['subitems'][$model->service_id] = $subitem;
+		}
+		//\d($item['subitems']['services']);exit;
+		//print_r([count($allServices), count($allReferences)]);exit;
+		$item['badge'] = count($allServices) + count($allReferences);
+
+		if (empty($item['subitems']['services']['subitems'])) {
+			unset($item['subitems']['services']);
+		}
+		if (empty($item['subitems']['serviceReferences']['subitems'])) {
+			unset($item['subitems']['serviceReferences']);
+		}
+		//unset($item['subitems']['services']);
+		$item['state'] = 'primary';
 		$items['service-button'] = $item;
 		return $items;
 	}
