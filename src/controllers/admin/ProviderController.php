@@ -22,9 +22,14 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
     {
         $providers = [];
         foreach (Provider::find()->all() as $provider) {
+            if (empty($provider->dataObject->object)) {
+                $providerName = 'Unknown Provider';
+            } else {
+                $providerName = $provider->dataObject->object->name;
+            }
             $providers[] = [
                 'id' => $provider->id,
-                'name' => $provider->dataObject->object->name,
+                'name' => $providerName,
                 'url' => $provider->dataObject->attributes['url'],
                 'active' => $provider->active === 1 ? 'Yes' : 'No',
                 'created' => $provider->created,
@@ -56,7 +61,7 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
         } else {
             Yii::$app->response->error = 'Sensor provider \'' . $model->dataObject->object->name .'\' could not be deleted.';
         }
-            Yii::$app->response->redirect = ['/admin/provider/index'];
+        Yii::$app->response->redirect = ['/admin/provider/index'];
     }
 
     public function actionUpdate()
@@ -112,7 +117,7 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             if (!$valid) {
                 $this->params['model']->validate();
             }
-            $this->params['model']->last_check = date("Y-m-d G:i:s");
+            // $this->params['model']->last_check = date("Y-m-d G:i:s");
             if ($valid && $this->params['model']->save() && $model->initializeData(true)) {
                 Yii::$app->response->success = 'Sensor provider \'' . $model->dataObject->object->name .'\' created!';
                 Yii::$app->response->refresh = true;

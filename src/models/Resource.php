@@ -3,6 +3,7 @@
 namespace canis\sensorHub\models;
 
 use Yii;
+use canis\registry\models\Registry;
 
 /**
  * This is the model class for table "resource".
@@ -12,8 +13,8 @@ use Yii;
  * @property string $system_id
  * @property string $type
  * @property string $name
+ * @property bool $active
  * @property resource $data
- * @property integer $active
  * @property string $created
  * @property string $modified
  *

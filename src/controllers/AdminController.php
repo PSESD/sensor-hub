@@ -52,6 +52,11 @@ class AdminController extends Controller
         $tasks['view-daemon-log']['description'] = 'View the daemon log';
         $tasks['view-daemon-log']['run'] = [$this, 'actionDaemonLog'];
 
+        $tasks['view-provider-log'] = [];
+        $tasks['view-provider-log']['title'] = 'View Provider Log';
+        $tasks['view-provider-log']['description'] = 'View the provider log';
+        $tasks['view-provider-log']['run'] = [$this, 'actionProviderLog'];
+
         $tasks['flush-file-cache'] = [];
         $tasks['flush-file-cache']['title'] = 'Flush File Cache';
         $tasks['flush-file-cache']['description'] = 'Clear the file cache in Cascade';
@@ -122,6 +127,26 @@ class AdminController extends Controller
         $this->params['url'] = '/admin/daemon-log';
         $this->params['log'] = $daemonLog;
         $this->params['package'] = $daemonLog->package($base);
+        Yii::$app->response->view = 'view_log';
+    }
+
+    public function actionProviderLog()
+    {
+        $base = [];
+        $base['_'] = [];
+        $base['_']['url'] = Url::to(['/admin/provider-log']);
+
+        $providerLog = Engine::getProviderLog();
+        if (Yii::$app->request->isAjax && !empty($_GET['package'])) {
+            Yii::$app->response->data = $providerLog->getPackage(true);
+            return;
+        } elseif (Yii::$app->request->isAjax) {
+            Yii::$app->response->taskOptions = ['title' => 'Provider Log', 'modalClass' => 'modal-xl', 'isForm' => false];
+            Yii::$app->response->task = 'dialog';
+        }
+        $this->params['url'] = '/admin/provider-log';
+        $this->params['log'] = $providerLog;
+        $this->params['package'] = $providerLog->package($base);
         Yii::$app->response->view = 'view_log';
     }
 

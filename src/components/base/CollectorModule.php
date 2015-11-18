@@ -8,7 +8,7 @@
 
 namespace canis\sensorHub\components\base;
 
-use canis\base\collector\CollectedObjectTrait;
+use canis\collector\CollectedObjectTrait;
 use canis\base\exceptions\Exception;
 use Yii;
 
@@ -17,7 +17,7 @@ use Yii;
  *
  * @author Jacob Morrison <email@ofjacob.com>
  */
-abstract class CollectorModule extends \canis\base\Module implements \canis\base\collector\CollectedObjectInterface
+abstract class CollectorModule extends \canis\base\Module implements \canis\collector\CollectedObjectInterface
 {
     use CollectedObjectTrait;
 

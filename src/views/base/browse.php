@@ -3,6 +3,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 
 canis\sensorHub\components\web\assetBundles\BrowserAsset::register($this);
+canis\sensorHub\components\web\assetBundles\ViewerAsset::register($this);
 
 $config = [];
 $config['objects'] = $objects;

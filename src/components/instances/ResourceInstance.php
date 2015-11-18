@@ -44,10 +44,4 @@ class ResourceInstance extends Instance
     	$events = [];
     	return $events;
     }
-    public function getPackage()
-    {
-    	$package = parent::getPackage();
-
-    	return $package;
-    }
 }

@@ -29,8 +29,8 @@ CanisSensorObjectBrowser.prototype.init = function() {
 	this.elements.$canvas = $("<div />", {'class': 'row'}).appendTo(this.$element);
 	this.elements.$notice = $("<div />", {'class': 'alert alert-warning'}).html('').appendTo(this.elements.$canvas).hide();
 
-	this.elements.$menu = $("<div />", {'class': 'col-md-12'}).appendTo(this.elements.$canvas);
-	this.elements.$content = $("<div />", {'class': 'col-md-9'}).hide().appendTo(this.elements.$canvas);
+	this.elements.$menu = $("<div />", {'class': 'col-xs-12'}).appendTo(this.elements.$canvas);
+	this.elements.$content = $("<div />", {'class': 'col-xs-9'}).hide().appendTo(this.elements.$canvas);
 };
 
 CanisSensorObjectBrowser.prototype._handleResponse = function(data) {
@@ -41,6 +41,7 @@ CanisSensorObjectBrowser.prototype._handleResponse = function(data) {
 	if (this.elements.categories === undefined) {
 		this.elements.categories = {};
 	}
+	var links = [];
 	jQuery.each(data.objects, function(index, category) {
 		if (_this.elements.categories[index] === undefined) {
 			_this.elements.categories[index] = {'items': {}};
@@ -67,6 +68,7 @@ CanisSensorObjectBrowser.prototype._handleResponse = function(data) {
 					return false;
 				});
 			}
+			links.push(_this.elements.categories[index]['items'][key].$link);
 			_this.elements.categories[index]['items'][key].$link.html(item.label).attr({'href': item.url}).data('item', item);
 			_this.elements.categories[index]['items'][key].$link.removeClass('list-group-item-success list-group-item-info list-group-item-danger list-group-item-warning');
 	
@@ -75,6 +77,9 @@ CanisSensorObjectBrowser.prototype._handleResponse = function(data) {
 			}
 		});
 	});
+	if (this.selectedObject === false && links.length === 1) {
+		links.pop().click();
+	}
 	jQuery.each(_this.elements.categories, function (ci, cv) {
 		if (cv.refreshTime !== refreshTime) {
 			cv.$list.remove();
@@ -127,16 +132,16 @@ CanisSensorObjectBrowser.prototype._refresh = function() {
 		_this._handleResponse(data);
 	};
 	jQuery.ajax(ajaxSettings);
-	if (this.selectedObject) {
-		if (this.refreshContentTimer !== undefined) {
-			this.refreshContentTimer.abort();
-		}
-		var ajax = {'url': this.selectedObject.url};
-		ajax.success = function(response) {
-			_this.elements.$content.html(response.content);
-		};
-		this.refreshContentTimer = jQuery.ajax(ajax);
-	}
+	// if (this.selectedObject) {
+	// 	if (this.refreshContentTimer !== undefined) {
+	// 		this.refreshContentTimer.abort();
+	// 	}
+	// 	var ajax = {'url': this.selectedObject.url};
+	// 	ajax.success = function(response) {
+	// 		_this.elements.$content.html(response.content);
+	// 	};
+	// 	this.refreshContentTimer = jQuery.ajax(ajax);
+	// }
 };
 
 CanisSensorObjectBrowser.prototype.selectObject = function(item) {
@@ -144,7 +149,7 @@ CanisSensorObjectBrowser.prototype.selectObject = function(item) {
 	if (!this.expanded) {
 		this.expanded = true;
 		var $panel = this.$element.closest('.modal-sm').switchClass('modal-sm', 'modal-xl', 200);
-		this.elements.$menu.removeClass('col-md-12').addClass('col-md-3');
+		this.elements.$menu.removeClass('col-xs-12').addClass('col-xs-3');
 		this.elements.$content.html('Loading').show();
 	}
 	this.elements.$content.html('Loading...');
@@ -157,13 +162,14 @@ CanisSensorObjectBrowser.prototype.selectObject = function(item) {
 	ajax.success = function(response) {
 		_this.selectedObject = item;
 		_this.elements.$content.html(response.content);
+        $preparer.fire(_this.elements.$content);
 	};
 	jQuery.ajax(ajax);
 };
 
 
 $preparer.add(function(context) {
-	$('[data-object-browser]').each(function() {
+	$('[data-object-browser]', context).each(function() {
 		var settings = $(this).data('object-browser');
 		$(this).data('object-browser', new CanisSensorObjectBrowser($(this), settings));
 	});

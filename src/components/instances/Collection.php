@@ -9,7 +9,7 @@
 namespace canis\sensorHub\components\instances;
 
 use Yii;
-use canis\sensorHub\models\Registry;
+use canis\registry\models\Registry;
 
 abstract class Collection extends \yii\base\Object
 {

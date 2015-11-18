@@ -8,8 +8,8 @@
 
 namespace canis\sensorHub\setup\tasks;
 
-use canis\sensorHub\models\Group;
-use canis\sensorHub\models\Relation;
+use canis\auth\models\Group;
+use canis\registry\models\Relation;
 
 /**
  *

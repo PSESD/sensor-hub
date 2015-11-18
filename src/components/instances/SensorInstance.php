@@ -10,9 +10,11 @@ namespace canis\sensorHub\components\instances;
 use Yii;
 use canis\broadcaster\eventTypes\EventType;
 use canis\sensors\providers\ProviderInterface;
+use canis\sensors\base\SensorDataInterface;
 use canis\sensors\base\CheckEvent;
 use canis\sensorHub\models\SensorEvent;
-use canis\sensorHub\models\Registry;
+use canis\sensorHub\models\SensorData;
+use canis\registry\models\Registry;
 use canis\sensors\base\Sensor as BaseSensor;
 
 class SensorInstance extends Instance
@@ -49,13 +51,6 @@ class SensorInstance extends Instance
     	return $events;
     }
 
-    public function getPackage()
-    {
-    	$package = parent::getPackage();
-
-    	return $package;
-    }
-
     public function getObjectModel()
     {
     	if (!isset($this->_cache['object_model'])) {
@@ -85,14 +80,13 @@ class SensorInstance extends Instance
     			return true;
     		}
     	}
-		$timeString = $this->object->getCheckInterval($this);
 		if ($event->pause) {
 			$timeString = $event->pause;
 		}
     	if ($event->state !== $this->model->state) {
     		$this->triggerStateChange($event);
     	}
-    	return $this->scheduleCheck(true, $timeString);
+    	return $this->scheduleCheck();
     }
 
     protected function triggerStateChange(CheckEvent $event)
@@ -109,25 +103,44 @@ class SensorInstance extends Instance
     
     public function pauseSensor($save = true)
     {
-    	$this->model->next_check = null;
         $this->model->last_check = date("Y-m-d G:i:s");
     	if (!$save) {
     		return true;
     	}
-    	return $this->model->save();
+    	return $this->scheduleCheck(true);
     }
     
-    public function scheduleCheck($save = true, $timeString = false)
+    public function scheduleCheck($failback = false, $save = true)
     {
-        if ($timeString === false) {
-        	$this->model->next_check = null;
+        $timeString = $this->object->getCheckInterval($this);
+        $failbackTimeString = $this->object->getFailbackTime($this);
+        if ($failback) {
+            $this->model->next_check = date("Y-m-d G:i:s", max(strtotime($failbackTimeString), strtotime($timeString)));
         } else {
-        	$this->model->next_check = date("Y-m-d G:i:s", strtotime($timeString));
-    	}
+            $this->model->next_check = date("Y-m-d G:i:s", strtotime($timeString));
+        }
         if ($save) {
             return $this->model->save();
         }
         return true;
+    }
+
+    public function getPackage($viewPackage = false)
+    {
+        $package = parent::getPackage($viewPackage);
+        if ($viewPackage) {
+            $package['view']['events'] = ['handler' => 'events', 'items' => []];
+            foreach (SensorEvent::find()->where(['sensor_id' => $this->model->id])->all() as $event) {
+                $package['events']['items'][$event->id] = $event->attributes;
+            }
+            if ($this->hasDataPoint()) {
+                $package['view']['data'] = ['handler' => 'data', 'items' => []];
+                foreach (SensorData::find()->where(['sensor_id' => $this->model->id])->all() as $data) {
+                    $package['data']['items'][$data->id] = $data->value;
+                }
+            }
+        }
+        return $package;
     }
 
     public function getDataPoint()
@@ -137,6 +150,6 @@ class SensorInstance extends Instance
 
     public function hasDataPoint()
     {
-        return false;
+        return $this->object instanceof SensorDataInterface;
     }
 }

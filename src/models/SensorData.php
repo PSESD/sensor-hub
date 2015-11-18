@@ -3,6 +3,7 @@
 namespace canis\sensorHub\models;
 
 use Yii;
+use canis\registry\models\Registry;
 
 /**
  * This is the model class for table "sensor_data".

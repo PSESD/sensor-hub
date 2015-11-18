@@ -114,6 +114,7 @@ class m150000_000000_initial_core extends \canis\db\Migration
             'type' => 'string NOT NULL',
             'name' => 'string NOT NULL',
             'data' => 'longblob DEFAULT NULL',
+            'active' => 'bool NOT NULL DEFAULT 0',
             'created' => 'datetime DEFAULT NULL',
             'modified' => 'datetime DEFAULT NULL'
         ]);
@@ -172,6 +173,7 @@ class m150000_000000_initial_core extends \canis\db\Migration
         $this->createIndex('sensorDataSensorCreated', 'sensor_data', 'sensor_id,created', false);
         $this->addForeignKey('sensorDataSensor', 'sensor_data', 'sensor_id', 'sensor', 'id', 'CASCADE', 'CASCADE');
 
+        $this->db->createCommand()->checkIntegrity(true)->execute();
         return true;
     }
 

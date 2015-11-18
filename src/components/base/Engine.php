@@ -45,5 +45,13 @@ class Engine extends \canis\base\Component
 		$cronLog->key = 'daemon';
 		return $cronLog->statusLog;
 	}
+
+	static public function getProviderLog()
+	{
+		static::registerShutdownFunction();
+		$cronLog = new \canis\sensorHub\models\LogModel;
+		$cronLog->key = 'provider';
+		return $cronLog->statusLog;
+	}
 }
 ?>

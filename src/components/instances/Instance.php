@@ -8,9 +8,10 @@
 namespace canis\sensorHub\components\instances;
 
 use Yii;
+use yii\helpers\Url;
 use canis\caching\Cacher;
 use canis\broadcaster\eventTypes\EventType;
-use canis\action\Status;
+use canis\actions\Status;
 use linslin\yii2\curl;
 
 use canis\sensors\resources\ResourceInterface;
@@ -23,6 +24,8 @@ use canis\sensors\servers\ServerInterface;
 // use canis\sensors\base\SensorInterface;
 use canis\sensors\providers\ProviderInterface;
 
+use canis\sensorHub\components\base\Engine;
+use canis\sensorHub\models\Note as NoteModel;
 use canis\sensorHub\models\Site as SiteModel;
 use canis\sensorHub\models\Server as ServerModel;
 use canis\sensorHub\models\Sensor as SensorModel;
@@ -121,6 +124,13 @@ abstract class Instance
         $event->addCollection('site', new SiteCollection(['model' => $this->model]));
         $event->addCollection(['resource', 'resourceReference'], new ResourceCollection(['model' => $this->model]));
         $event->addCollection(['service', 'serviceReference'], new ServiceCollection(['model' => $this->model]));
+        // SensorModel::preloadAll();
+        // ServerModel::preloadAll();
+        // SiteModel::preloadAll();
+        // ResourceReferenceModel::preloadAll();
+        // ResourceModel::preloadAll();
+        // ServiceModel::preloadAll();
+        // ServiceReferenceModel::preloadAll();
 
         $event->maxDepth = $maxDepth;
         $this->trigger(static::EVENT_COLLECT_OBJECTS, $event);
@@ -207,7 +217,9 @@ abstract class Instance
     public function getLog()
     {
         if (!isset($this->_cache['log'])) {
-            $this->_cache['log'] = new \canis\action\Status;
+            $this->_cache['log'] = Engine::getProviderLog();
+        } elseif (!isset($this->_cache['log']->connectedMessageStore)) {
+            $this->_cache['log']->setConnectedMessageStore(Engine::getProviderLog());
         }
         return $this->_cache['log'];
     }
@@ -229,20 +241,27 @@ abstract class Instance
         if (isset($parentObject)) {
             $parentKey = $parentObject->model->primaryKey;
         }
+        $nextCheckFunction = function($object, $parentObject, $model) use ($self) {
+            $timeString = $object->discoverInitialCheck($self);
+            if ($model->isNewRecord) {
+                $timeString = 'now';
+            }
+            return date("Y-m-d G:i:s", strtotime($timeString)); 
+        };
         $possibleAttributes = [
             'system_id' => $object->id,
             'name' => $object->getName(),
             'type' => function($object, $parentObject) { return $object->getType(); },
             'service_id' => function($object, $parentObject) use ($self) { return $object->discoverServiceId($self); },
             'resource_id' => function($object, $parentObject) use ($self) { return $object->discoverResourceId($self); },
-            'next_check' => function($object, $parentObject) use ($self) { return date("Y-m-d G:i:s", strtotime($object->discoverInitialCheck($self))); },
+            'next_check' => $nextCheckFunction,
             'provider_id' => $parentKey,
             'object_id' => $parentKey
         ];
         foreach ($possibleAttributes as $attribute => $value) {
             if ($model->hasAttribute($attribute)) {
                 if (is_callable($value)) {
-                    $value = $value($object, $parentObject);
+                    $value = $value($object, $parentObject, $model);
                 }
                 if (empty($value)) {
                     return false;
@@ -253,7 +272,7 @@ abstract class Instance
         return $model;
     }
 
-    protected function internalInitialize(\canis\sensors\base\BaseInterface $object, \canis\sensors\base\BaseInterface $parentObject = null)
+    protected function internalInitialize(\canis\sensors\base\BaseInterface $object, \canis\sensors\base\BaseInterface $parentObject = null, $initialInitialize = true)
     {
         $object->model = null;
         $modelClass = static::getSensorObjectModelClass($object);
@@ -266,7 +285,7 @@ abstract class Instance
         if (!isset($object->model)) {
             $object->model = $this->internalFindModel($object, $parentObject, $modelClass);
             if ($object->model === false) {
-                $this->log->addWarning("{$object->name} was already in the system by another provider");
+                // $this->log->addWarning("{$object->name} was already in the system by another provider", ['class' => get_class($object->model), 'id' => $object->id]);
                 return false;
             } elseif ($object->model === null) {
                 $modelConfig = [];
@@ -287,7 +306,7 @@ abstract class Instance
                 }
                 if (!$object->model->save()) {
                     $this->log->addError('Unable to save object model', ['class' => get_class($object->model), 'attributes' => $object->model->attributes, 'errors' => $object->model->errors]);
-                    //\d($object->model->errors);exit;
+                    \d($object->model->errors);
                     return false;
                 }
             }
@@ -304,7 +323,11 @@ abstract class Instance
         if (!empty($parentObject)) {
             $extra = ' called by ' . get_class($parentObject) .':'. $parentObject->id;
         }
-        foreach (['server', 'resource',  'resourceReference', 'service', 'serviceReference', 'site', 'sensor'] as $objectType) {
+        $objectTypes = ['server', 'resource',  'resourceReference', 'service', 'serviceReference', 'site', 'sensor'];
+        if ($initialInitialize) {
+            $objectTypes = ['sensor'];
+        }
+        foreach ($objectTypes as $objectType) {
             $getMethod = 'get'.ucfirst($objectType).'s';
             $behaviorName = 'Has'.ucfirst($objectType) .'s';
             if ($object->getBehavior($behaviorName) === null) {
@@ -313,14 +336,15 @@ abstract class Instance
             $subobjects = $object->getBehavior($behaviorName)->{$getMethod}();
             $currentModels = $this->internalCurrentModels($objectType, $object->model->id);
             foreach ($subobjects as $subobject) {
-                if (!$this->internalInitialize($subobject, $object)) {
-                    $this->log->addError("Unable to initialize {$objectType}: {$subobject->id}");
+                if (!$this->internalInitialize($subobject, $object, false)) {
+                    // $this->log->addError("Unable to initialize {$objectType}: {$subobject->id}");
                 }
                 if (!empty($subobject->model->id)) {
                     unset($currentModels[$subobject->model->id]);
                 }
             }
             foreach ($currentModels as $model) {
+                $this->log->addInfo("Deleting old model {$model->descriptor} ($model->id)");
                 $model->delete();
             }
         }
@@ -353,15 +377,24 @@ abstract class Instance
     abstract public function getParentObjects();
     abstract public function getComponentPackage();
 
-    public function getPackage()
+    public function getPackage($viewPackage = false)
     {
         $package = [];
         $package['id'] = $this->model->id;
+        $package['type'] = $this->getObjectType();
+        $package['url'] = Url::to([$this->getObjectType() . '/view', 'id' => $this->model->id]);
         $package['descriptor'] = $this->model->descriptor;
         $package['subdescriptor'] = $this->model->subdescriptor;
         $package['components'] = $this->getComponentPackage();
         $package['info'] = $this->getInfo();
-        
+        if ($viewPackage) {
+            $package['view'] = [];
+            $package['view']['info'] = ['handler' => 'info'];
+            $package['view']['notes'] = ['handler' => 'notes', 'items' => []];
+            foreach (NoteModel::find()->where(['object_id' => $this->model->id])->all() as $note) {
+                $package['notes']['items'][$note->id] = $note->attributes;
+            }
+        }
         // $package['object'] = $this->object->getPackage();
         $package['attributes'] = $this->attributes;
         return $package;

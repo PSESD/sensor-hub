@@ -74,11 +74,13 @@ class ProviderInstance extends Instance
     	}
     }
 
-    public function initialize($log)
+    public function initialize($log, $initialInitialize = true)
     {   
         $this->log = $log;
-        //\d($this->object);exit;
-        $result = $this->internalInitialize($this->object);
+        $id = md5(microtime(true));
+        $this->log->addInfo("Starting initializing provider ({$id})");
+        $result = $this->internalInitialize($this->object, null, $initialInitialize);
+        $this->log->addInfo("Finished initializing provider ({$id})");
         return $result;
     }
 
@@ -124,7 +126,7 @@ class ProviderInstance extends Instance
     		$event->state = BaseSensor::STATE_ERROR;
     		return;
 		}
-        if (!$this->initialize(null)) {
+        if (!$this->initialize(null, false)) {
             $event->addError('Sensor provider could not be initialized.');
             $event->notify = true;
             $event->pause = '+1 day';
@@ -217,12 +219,5 @@ class ProviderInstance extends Instance
 		];
 		return $fields;
 	}
-
-    public function getPackage()
-    {
-    	$package = parent::getPackage();
-
-    	return $package;
-    }
 }
 ?>

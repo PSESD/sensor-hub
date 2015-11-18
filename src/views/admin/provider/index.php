@@ -29,6 +29,18 @@ echo GridView::widget([
             'template' => '{update} {delete}',
             'buttonOptions' => [
                 'data-handler' => 'background'
+            ],
+            'buttons' => [
+                'delete' => function ($url, $model, $key) {
+                    $options = array_merge([
+                        'title' => Yii::t('yii', 'Delete'),
+                        'aria-label' => Yii::t('yii', 'Delete'),
+                        'data-confirm' => Yii::t('yii', 'Are you sure you want to delete this item?'),
+                        'data-method' => 'post',
+                        'data-pjax' => '0',
+                    ], []);
+                    return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, $options);
+                }
             ]
         ],
         'name',

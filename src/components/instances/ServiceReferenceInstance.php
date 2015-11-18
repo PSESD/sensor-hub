@@ -34,8 +34,9 @@ class ServiceReferenceInstance extends Instance
     public function getComponentPackage()
     {
         $c = [];
-        $c['sensors'] = $this->collectSensors(3)->package;
-        $c['resources'] = $this->collectResources(1)->package;
+        $collections = $this->getChildObjects();
+        $c['sensors'] = $collections['sensor']->getPackage(3);
+        $c['resources'] = $collections['resource']->getPackage(1);
         return $c;
     }
 
@@ -43,12 +44,5 @@ class ServiceReferenceInstance extends Instance
     {
     	$events = [];
     	return $events;
-    }
-    
-    public function getPackage()
-    {
-    	$package = parent::getPackage();
-
-    	return $package;
     }
 }

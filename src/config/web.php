@@ -15,8 +15,6 @@ $config['components']['urlManager'] = [
     'rules' => [
         // a standard rule mapping '/' to 'site/index' action
         '' => 'default/index',
-        'login' => 'auth/login',
-        'logout' => 'auth/logout',
         '<controller:\w+>' => '<controller>/index',
         '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
     ],

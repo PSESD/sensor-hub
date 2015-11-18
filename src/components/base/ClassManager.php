@@ -21,27 +21,28 @@ class ClassManager extends \canis\base\ClassManager
     public function baseClasses()
     {
         return [
-            'Registry' => 'canis\sensorHub\models\Registry',
-            'Relation' => 'canis\sensorHub\models\Relation',
+            'Registry' => 'canis\registry\models\Registry',
+            'Relation' => 'canis\registry\models\Relation',
 
-            'Aca' => 'canis\sensorHub\models\Aca',
-            'Acl' => 'canis\sensorHub\models\Acl',
-            'AclRole' => 'canis\sensorHub\models\AclRole',
-            'Role' => 'canis\sensorHub\models\Role',
+            'Aca' => 'canis\acl\models\Aca',
+            'Acl' => 'canis\acl\models\Acl',
+            'AclRole' => 'canis\acl\models\AclRole',
+            'Role' => 'canis\acl\models\Role',
 
             'User' => 'canis\sensorHub\models\User',
-            'UserDevice' => 'canis\sensorHub\models\UserDevice',
-            'Group' => 'canis\sensorHub\models\Group',
-            'IdentityProvider' => 'canis\sensorHub\models\IdentityProvider',
-            'Identity' => 'canis\sensorHub\models\Identity',
 
-            'Storage' => 'canis\sensorHub\models\Storage',
-            'StorageEngine' => 'canis\sensorHub\models\StorageEngine',
+            'UserDevice' => 'canis\auth\models\UserDevice',
+            'Group' => 'canis\auth\models\Group',
+            'IdentityProvider' => 'canis\auth\models\IdentityProvider',
+            'Identity' => 'canis\auth\models\Identity',
 
-            'Audit' => 'canis\sensorHub\models\Audit',
-            'Meta' => 'canis\sensorHub\models\Meta',
+            'Storage' => 'canis\storage\models\Storage',
+            'StorageEngine' => 'canis\storage\models\StorageEngine',
 
-            'SearchTermResult' => 'canis\sensorHub\components\db\behaviors\SearchTermResult',
+            'Audit' => 'canis\auditable\models\Audit',
+            'Meta' => 'canis\metable\models\Meta',
+
+            'SearchTermResult' => 'canis\sensorHub\components\db\behaviors\SearchTermResult'
         ];
     }
 }

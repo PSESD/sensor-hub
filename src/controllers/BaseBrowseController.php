@@ -10,12 +10,12 @@ namespace canis\sensorHub\controllers;
 
 use Yii;
 use yii\helpers\Url;
-use canis\base\language\Noun;
+use canis\language\Noun;
 use canis\sensorHub\models\Instance;
 use canis\sensorHub\models\Site;
 use canis\sensorHub\models\Server;
 use canis\sensorHub\models\Resource;
-use canis\sensorHub\models\Registry;
+use canis\registry\models\Registry;
 use canis\sensorHub\models\Sensor;
 use yii\helpers\ArrayHelper;
 
@@ -97,22 +97,33 @@ abstract class BaseBrowseController extends Controller
     public function actionView()
     {
         if (empty($_GET['id']) || !($objectModel = Registry::getObject($_GET['id']))) {
-            throw \yii\web\NotFoundHttpException("Object not found");
+            throw new \yii\web\NotFoundHttpException("Object not found");
         }
-        if (empty($_GET['parent']) || !($parentModel = Registry::getObject($_GET['parent']))) {
-            throw \yii\web\NotFoundHttpException("Object not found");
+        $parentModel = false;
+        if (!empty($_GET['parent']) && !($parentModel = Registry::getObject($_GET['parent']))) {
+            throw new \yii\web\NotFoundHttpException("Object not found");
         }
         Yii::$app->response->params['objectModel'] = $objectModel;
         Yii::$app->response->params['parentModel'] = $parentModel;
         $object = $objectModel->dataObject;
         $children = $object->getChildObjects();
-        
+        $initial = [];
+        $initial['object'] = $objectModel->dataObject->getPackage(true);
+        $initial['parentObject'] = false;
+        $parentId = null;
+        if ($parentModel) {
+            $parentId = $_GET['parent'];
+            $initial['parentObject'] = $parentModel->dataObject->getPackage();
+        }
+        $this->params['parentId'] = $parentId;
+        $this->params['initial'] = $initial;
+        if (!empty($_GET['package'])) {
+            Yii::$app->response->data = $initial;
+        }
         if (!empty($_GET['bare'])) {
             $this->layout = false;
         } else {
-            Yii::$app->response->params['objects'] = $children[$_GET['type']];
-            Yii::$app->response->params['objectType'] = $_GET['type'];
-            Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor .'\'s '.ucfirst($_GET['type']).'s', 'modalClass' => 'modal-sm', 'isForm' => false];
+            Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor, 'modalClass' => 'modal-xl', 'isForm' => false];
             Yii::$app->response->task = 'dialog';
         }
         Yii::$app->response->view = '@canis/sensorHub/views/base/view';

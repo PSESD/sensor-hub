@@ -2,7 +2,7 @@
 $lazyLoad = !(defined('IS_CONSOLE') && IS_CONSOLE);
 
 $config = [
-    'class' => 'canis\base\collector\Component',
+    'class' => 'canis\collector\Component',
     'cacheTime' => 120,
     'collectors' => [
         'roles' => include(CANIS_APP_CONFIG_PATH . DIRECTORY_SEPARATOR . 'roles.php'),

@@ -115,16 +115,16 @@ CanisItem.prototype.startPendingAction = function(actionDescription) {
 
 CanisItem.prototype.init = function() {
 	this.elements.$canvas = $("<div />", {'class': 'list-group-item'}).appendTo(this.manager.elements.$list);
-	this.elements.$pendingAction = $("<div />", {'class': 'label label-default'}).hide().appendTo(this.elements.$canvas);
-	this.elements.actions = {};
-	this.elements.actions.$buttonGroup = $("<div />", {'class': 'btn-group pull-right'}).appendTo(this.elements.$canvas);
-	this.elements.actions.$button = $("<a />", {'class': 'btn fa fa-chevron-down dropdown-toggle', 'href': '#', 'data-toggle': 'dropdown'}).appendTo(this.elements.actions.$buttonGroup);
-	this.elements.actions.$menu = $("<ul />", {'class': 'dropdown-menu'}).appendTo(this.elements.actions.$buttonGroup);
+	// this.elements.$pendingAction = $("<div />", {'class': 'label label-default'}).hide().appendTo(this.elements.$canvas);
+	// this.elements.actions = {};
+	// this.elements.actions.$buttonGroup = $("<div />", {'class': 'btn-group pull-right'}).appendTo(this.elements.$canvas);
+	// this.elements.actions.$button = $("<a />", {'class': 'btn fa fa-chevron-down dropdown-toggle', 'href': '#', 'data-toggle': 'dropdown'}).appendTo(this.elements.actions.$buttonGroup);
+	// this.elements.actions.$menu = $("<ul />", {'class': 'dropdown-menu'}).appendTo(this.elements.actions.$buttonGroup);
 	this.elements.$webActions = $("<div />", {'class': 'btn-group btn-group-sm pull-right'}).appendTo(this.elements.$canvas);
 	
 	this.elements.$titleContainer = $("<h4 />", {'class': 'list-group-item-heading'}).appendTo(this.elements.$canvas);
 	this.elements.$components = $("<div />", {'class': 'btn-group btn-group pull-right canis-components'}).appendTo(this.elements.$titleContainer);
-	this.elements.$title = $("<span />", {'class': ''}).appendTo(this.elements.$titleContainer);
+	this.elements.$title = $("<a />", {'class': '', 'href': '#', 'data-handler': 'background'}).appendTo(this.elements.$titleContainer);
 	this.elements.$titleBuffer = $("<span />", {'class': ''}).html(' ').appendTo(this.elements.$titleContainer);
 	this.elements.$infoIcon = $("<span />", {'class': 'text-primary fa fa-info-circle'}).appendTo(this.elements.$titleContainer).hide();
 }
@@ -377,7 +377,7 @@ CanisItem.prototype.updateUptime = function() {
 
 CanisItem.prototype.update = function(item) {
 	this.item = item;
-	this.elements.$title.html(item.descriptor);
+	this.elements.$title.html(item.descriptor).attr({'href': item.url});
 	this.updateInfo();
 	// this.updateWebActions();
 	// this.updateItemActions();
@@ -385,8 +385,8 @@ CanisItem.prototype.update = function(item) {
 	this.updateComponents();
 }
 
-$(function() {
-	$('[data-monitor]').each(function() {
+$preparer.add(function(context) {
+	$('[data-monitor]', context).each(function() {
 		var settings = $(this).data('monitor');
 		$(this).data('monitor', new CanisMonitor($(this), settings));
 	});

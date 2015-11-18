@@ -50,7 +50,7 @@ class LogModel extends Model
         $save = false;
         $log = Yii::$app->fileCache->get($this->getKey());
         if (!$log) {
-            $log = new \canis\action\Status;
+            $log = new \canis\actions\Status;
             $save = true;
         }
         $log->log = $this;

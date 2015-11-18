@@ -25,7 +25,7 @@ class Acl extends AclTask
             [
                 'action' => null,
                 'controlled' => null,
-                'accessing' => ['model' => 'canis\sensorHub\models\Group', 'fields' => ['system' => 'administrators']],
+                'accessing' => ['model' => 'canis\auth\models\Group', 'fields' => ['system' => 'administrators']],
                 'object_model' => null,
                 'task' => 'allow',
             ],

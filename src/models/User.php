@@ -9,6 +9,8 @@
 namespace canis\sensorHub\models;
 
 use Yii;
+use canis\registry\models\Registry;
+use canis\auth\models\Group;
 use canis\broadcaster\eventTypes\DynamicUserNotification;
 use canis\broadcaster\eventTypes\EventType;
 
@@ -16,7 +18,7 @@ use canis\broadcaster\eventTypes\EventType;
  * User is the model class for table "user".
  */
 class User 
-    extends \canis\db\models\User
+    extends \canis\auth\models\User
     implements \canis\broadcaster\BroadcastableInterface
 {
     const SYSTEM_EMAIL = 'system@system.local';

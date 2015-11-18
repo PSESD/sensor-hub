@@ -4,6 +4,7 @@ namespace canis\sensorHub\models;
 
 use Yii;
 use canis\sensors\base\Sensor as BaseSensor;
+use canis\registry\models\Registry;
 
 /**
  * This is the model class for table "sensor".

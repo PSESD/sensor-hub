@@ -11,7 +11,7 @@ use Yii;
 use canis\broadcaster\eventTypes\EventType;
 use canis\sensors\providers\ProviderInterface;
 use canis\sensors\serviceReferences\ServiceBinding;
-use canis\sensorHub\models\Registry;
+use canis\registry\models\Registry;
 use canis\sensorHub\models\Service;
 
 class SiteInstance extends Instance
@@ -48,13 +48,6 @@ class SiteInstance extends Instance
         return $c;
     }
     
-    public function getPackage()
-    {
-    	$package = parent::getPackage();
-
-    	return $package;
-    }
-
 
     public function getInfo()
     {

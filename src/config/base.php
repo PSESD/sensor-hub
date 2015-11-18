@@ -1,16 +1,17 @@
 <?php
-use canis\security\Gatekeeper;
+use canis\acl\security\Gatekeeper;
+use canis\web\unifiedMenu\ApplicationComponent as UnifiedMenuComponent;
 use canis\base\FileStorage;
+use canis\sensorHub\components\base\ClassManager;
+use canis\sensorHub\components\web\View;
+use canis\sensorHub\components\web\Response;
+use canis\sensorHub\Bootstrap;
+
 use yii\log\FileTarget;
 use yii\caching\DummyCache;
 use yii\caching\FileCache;
 use yii\redis\Cache as RedisCache;
 use yii\i18n\Formatter as I18nFormatter;
-use canis\sensorHub\components\base\ClassManager;
-use canis\sensorHub\components\web\View;
-use canis\sensorHub\components\web\Response;
-use canis\web\unifiedMenu\ApplicationComponent as UnifiedMenuComponent;
-use canis\sensorHub\Bootstrap;
 
 defined('CANIS_ROLE_LEVEL_OWNER') 		|| define('CANIS_ROLE_LEVEL_OWNER', 600); // owner levels: 501-600
 defined('CANIS_ROLE_LEVEL_MANAGER')		|| define('CANIS_ROLE_LEVEL_MANAGER', 500); // manager levels: 401-500
@@ -123,7 +124,7 @@ if (!isset($base['components']['mailer'])) {
 }
 if (class_exists('canis\sensorHub\models\User')) {
 	$base['components']['user'] = [
-	    'class' => 'canis\web\User',
+	    'class' => 'canis\auth\web\User',
 	    'enableAutoLogin' => true,
 	    'identityClass' => 'canis\sensorHub\models\User',
 	    'loginUrl' => ['/login'],

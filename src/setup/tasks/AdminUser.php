@@ -8,7 +8,7 @@
 
 namespace canis\sensorHub\setup\tasks;
 
-use canis\sensorHub\models\Group;
+use canis\auth\models\Group;
 use canis\sensorHub\models\User;
 use canis\base\exceptions\Exception;
 
