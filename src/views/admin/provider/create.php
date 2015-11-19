@@ -12,7 +12,7 @@ $baseDataId = Html::getInputId($model, 'data');
 $baseDataName = Html::getInputName($model, 'data');
 echo Html::beginTag('div', ['class' => 'row']);
 // \d($instance);
-foreach ($model->getIntitializeData()->setupFields() as $id => $field) {
+foreach ($model->dataObject->setupFields() as $id => $field) {
 	if (empty($field['on'])) {
 		$field['on'] = ['update', 'restore', 'create'];
 	}

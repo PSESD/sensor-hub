@@ -318,7 +318,7 @@ abstract class Instance
                 $this->log->addWarning("{$object->name} could not be updated");
             }
         }
-        $object->model->dataObject->object = $object->simpleClone();
+        $object->model->dataObject->object = $baseObject = $object->simpleClone();
         $extra = '';
         if (!empty($parentObject)) {
             $extra = ' called by ' . get_class($parentObject) .':'. $parentObject->id;

@@ -20,9 +20,6 @@ use canis\registry\models\Registry;
  */
 class Provider extends \canis\db\ActiveRecordRegistry
 {
-    protected $_initializeData;
-
-
     public function getContextualDescriptor($parent = false)
     {
         return $this->descriptor;
@@ -86,23 +83,6 @@ class Provider extends \canis\db\ActiveRecordRegistry
         ];
     }
 
-    public function setInitializeData($data)
-    {
-        $this->_initializeData = $data;
-        $this->_initializeData->model = $this;
-        return $this;
-    }
-
-    public function getIntitializeData()
-    {
-        // $idata = null;
-        // if (isset($this->_initializeData)) {
-        //     $this->_initializeData->model = $this;
-        //     $idata = clone $this->_initializeData;
-        // }
-        return $this->_initializeData;
-    }
-
     public function dependentModels()
     {
         $models = [];
@@ -121,25 +101,16 @@ class Provider extends \canis\db\ActiveRecordRegistry
 
     public function initializeData($isFirstInitialize)
     {
-        if (!isset($this->_initializeData)) {
-            $this->getIntitializeData()->statusLog->addError('No initialization data');
+        if (!isset($this->dataObject)) {
+            $this->dataObject->statusLog->addError('No initialization data');
             return false;
         }
-        //\d($this->getIntitializeData()->object); $this->delete();exit;
-        $this->dataObject = clone $this->getIntitializeData();
-        $this->dataObject->object = null;
-        //\d($this->getIntitializeData()->object->getSites());exit;
-        if (!$this->getIntitializeData()->initialize($this->getIntitializeData()->statusLog)) {
-            if (!empty($this->_initializeData)) {
-                $this->getIntitializeData()->statusLog->addError('Unable to initialize provider!');
-            }
+        if (!$this->dataObject->initialize(null)) {
             if ($isFirstInitialize) {
                 $this->delete();
             }
             return false;
-        } else {
-            $this->dataObject = $this->getIntitializeData();
-            return true;
         }
+        return true;
     }
 }

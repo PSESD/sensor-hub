@@ -57,9 +57,9 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             throw new NotFoundHttpException("Provider not found");
         }
         if ($model->delete()) {
-            Yii::$app->response->success = 'Sensor provider \'' . $model->dataObject->object->name .'\' deleted!';
+            Yii::$app->response->success = 'Sensor provider \'' . $model->descriptor .'\' deleted!';
         } else {
-            Yii::$app->response->error = 'Sensor provider \'' . $model->dataObject->object->name .'\' could not be deleted.';
+            Yii::$app->response->error = 'Sensor provider \'' . $model->descriptor .'\' could not be deleted.';
         }
         Yii::$app->response->redirect = ['/admin/provider/index'];
     }
@@ -103,7 +103,7 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
     {
         $this->params['model'] = $model = new Provider;
         $this->params['scenario'] = $scenario = 'create';
-        $this->params['instance'] = $this->params['model']->initializeData = new ProviderInstance;
+        $this->params['instance'] = $this->params['model']->dataObject = new ProviderInstance;
         if (!empty($_POST)) {
             $data = false;
             if (isset($_POST['Provider']['data'])) {
@@ -118,10 +118,17 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
                 $this->params['model']->validate();
             }
             // $this->params['model']->last_check = date("Y-m-d G:i:s");
-            if ($valid && $this->params['model']->save() && $model->initializeData(true)) {
-                Yii::$app->response->success = 'Sensor provider \'' . $model->dataObject->object->name .'\' created!';
-                Yii::$app->response->refresh = true;
-                return;
+            if ($valid && $this->params['model']->save()) {
+                if (!$model->initializeData(true)) {
+                    $model->delete();
+                    Yii::$app->response->error = 'Sensor provider could not be created!';
+                    Yii::$app->response->refresh = true;
+                    return;
+                } else {
+                    Yii::$app->response->success = 'Sensor provider \'' . $model->dataObject->object->name .'\' created!';
+                    Yii::$app->response->refresh = true;
+                    return;
+                }
             }
         }
         Yii::$app->response->view = 'create';
