@@ -1,6 +1,10 @@
 function CanisSensorObjectBrowser($element, settings) {
     CanisComponent.call(this);
+    var _this = this;
 	this.$element = $element.addClass('browser');
+	this.$element.on('remove', function() {
+        clearTimeout(_this.scheduledRefresh);
+    });
 	this.items = {};
 	this.elements = {};
 	this.selectedObject = false;
@@ -11,6 +15,7 @@ function CanisSensorObjectBrowser($element, settings) {
 	this.scheduleRefresh();
 	this.$element.on('refresh', function() {
 		_this._refresh();
+		_this.$element = null;
 	});
 
 	this.expanded = false;
@@ -106,16 +111,9 @@ CanisSensorObjectBrowser.prototype.scheduleRefresh = function() {
 		clearTimeout(this.scheduledRefresh);
 	}
 
-    if (this.removalSetup === undefined) {
-        this.removalSetup = true;
-        this.elements.$canvas.on('remove', function() {
-            clearTimeout(_this.scheduledRefresh);
-            _this.elements.$canvas.removed = true;
-        });
-    }
-    if (_this.elements.$canvas.removed !== undefined) {
-    	return;
-    }
+	if (this.$element === null) {
+		return;
+	}
 	this.scheduledRefresh = setTimeout(function() {
 		_this._refresh();
 	}, 5000);

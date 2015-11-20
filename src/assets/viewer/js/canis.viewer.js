@@ -1,6 +1,7 @@
 function CanisSensorObjectViewer($element, settings) {
     CanisComponent.call(this);
-	this.$element = $element.addClass('viewer');
+    var _this = this;
+	this.$element = $element.addClass('sensor-viewer');
 	this.sensorObject = false;
 	this.elements = {};
 	this.settings = jQuery.extend(true, {}, this.defaultSettings, settings);
@@ -8,6 +9,13 @@ function CanisSensorObjectViewer($element, settings) {
 	this.init();
 	this._handleResponse(settings.initial);
 	this.isInitializing = false;
+	this.$element.on('remove', function() {
+		_this.$element = null;
+        clearTimeout(_this.scheduledRefresh);
+    });
+	this.$element.on('refresh', function() {
+		_this._refresh();
+	});
 }
 
 CanisSensorObjectViewer.prototype = jQuery.extend(true, {}, CanisComponent.prototype);
@@ -27,7 +35,7 @@ CanisSensorObjectViewer.prototype.init = function() {
 	if (_this.settings.hideTitle) {
 		panelHeading = false;
 	}
-	this._refresh();
+	this.scheduleRefresh();
 	this.$element.on('refresh', function() {
 		_this._refresh();
 	});
@@ -53,6 +61,9 @@ CanisSensorObjectViewer.prototype.scheduleRefresh = function() {
 	var _this = this;
 	if (this.scheduledRefresh !== undefined) {
 		clearTimeout(this.scheduledRefresh);
+	}
+	if (this.$element === null) {
+		return;
 	}
 	this.scheduledRefresh = setTimeout(function() {
 		_this._refresh();
@@ -92,12 +103,23 @@ CanisSensorObject.prototype.refresh = function(item) {
 	this.item = item;
 	var colsToSplit = [];
 	var colsLeft = 12;
+	var currentColumn = 0;
+
+	jQuery.each(item.view, function(index, viewComponent) {
+		currentColumn++;
+		if (viewComponent.priority === undefined) {
+			viewComponent.priority = currentColumn; 
+		}
+	});
+
+	item.view = _.sortBy(item.view, 'priority');
+
+	var minimumColSize = 3;
 
 	jQuery.each(item.view, function(index, viewComponent) {
 		if (viewComponent.handler === undefined) {
 			return true;
 		}
-		
 	    var dataTypeClass = 'CanisObjectColumn_' + viewComponent.handler.capitalize();
 	    if (window[dataTypeClass] !== undefined) {
 	    	if (!_this.columns[index]) {
@@ -108,16 +130,22 @@ CanisSensorObject.prototype.refresh = function(item) {
 	    	if (viewComponent.columns !== undefined) {
 	    		_this.columns[index].setColumnSize(viewComponent.columns);
 	    		colsLeft = colsLeft - viewComponent.columns;
+	    		if (colsLeft <= minimumColSize) {
+	    			colsLeft = 12;
+	    		}
 	    	} else {
 	    		colsToSplit.push(_this.columns[index]);
 	    	}
 	    }
-
-	    var colSize = Math.floor(colsLeft / colsToSplit.length);
-	    jQuery.each(colsToSplit, function (i, col) {
-	    	col.setColumnSize(colSize);
-	    });
 	});
+
+    var colSize = Math.floor(colsLeft / colsToSplit.length);
+    if (colSize <= minimumColSize) {
+    	colSize = minimumColSize;
+    }
+    jQuery.each(colsToSplit, function (i, col) {
+    	col.setColumnSize(colSize);
+    });
 };
 
 CanisSensorObject.prototype.show = function() {
@@ -150,8 +178,9 @@ CanisObjectColumn.prototype.getPanelHeading = function() {
 };
 
 CanisObjectColumn.prototype.refresh = function(viewComponent) {
-	console.log(['refresh', viewComponent, this.constructor.name]);
+	// console.log(['refresh', viewComponent, this.constructor.name]);
 	this.viewComponent = viewComponent;
+
 };
 
 CanisObjectColumn.prototype.setColumnSize = function(size) {
@@ -166,7 +195,16 @@ CanisObjectColumn.prototype.show = function() {
 CanisObjectColumn.prototype.hide = function() {
 	this.elements.$column.hide();
 };
-
+CanisObjectColumn.prototype.parseUrl = function(url, replacements) {
+	if (replacements === undefined) {
+		replacements = {};
+	}
+	replacements.objectId = this.sensorObject.item.id;
+	jQuery.each(replacements, function(find, replace) {
+		url = url.replace('__'+find+'__', replace);
+	});
+	return url;
+};
 
 function CanisObjectColumn_Notes(sensorObject, viewComponent) {
     CanisObjectColumn.call(this, sensorObject, viewComponent);
@@ -179,6 +217,33 @@ CanisObjectColumn_Notes.prototype.refresh = function(viewComponent) {
 	var _this = this;
 };
 
+CanisObjectColumn_Notes.prototype.getPanelHeading = function() {
+	var heading = {};
+	heading.label = this.component.handler.capitalize();
+	heading.menu = {};
+	heading.menu.createItem = {'label': 'Create', 'icon': 'fa fa-plus', 'background': true, 'url': this.parseUrl(this.component.urls.create)};
+	return heading;
+};
+
+function CanisObjectColumn_Contacts(sensorObject, viewComponent) {
+    CanisObjectColumn.call(this, sensorObject, viewComponent);
+}
+CanisObjectColumn_Contacts.prototype = Object.create(CanisObjectColumn.prototype);
+CanisObjectColumn_Contacts.prototype.objectClass = 'CanisObjectColumn_Contacts';
+CanisObjectColumn_Contacts.prototype.constructor = CanisObjectColumn_Contacts;
+CanisObjectColumn_Contacts.prototype.refresh = function(viewComponent) {
+	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+	var _this = this;
+};
+CanisObjectColumn_Contacts.prototype.getPanelHeading = function() {
+	var heading = {};
+	heading.label = this.component.handler.capitalize();
+	heading.menu = {};
+	heading.menu.createItem = {'label': 'Create', 'icon': 'fa fa-plus', 'background': true, 'url': this.component.urls.create};
+	return heading;
+};
+
+
 
 function CanisObjectColumn_Info(sensorObject, viewComponent) {
     CanisObjectColumn.call(this, sensorObject, viewComponent);
@@ -186,6 +251,18 @@ function CanisObjectColumn_Info(sensorObject, viewComponent) {
 CanisObjectColumn_Info.prototype = Object.create(CanisObjectColumn.prototype);
 CanisObjectColumn_Info.prototype.objectClass = 'CanisObjectColumn_Info';
 CanisObjectColumn_Info.prototype.constructor = CanisObjectColumn_Info;
+
+
+function CanisObjectColumn_Sensors(sensorObject, viewComponent) {
+    CanisObjectColumn.call(this, sensorObject, viewComponent);
+}
+CanisObjectColumn_Sensors.prototype = Object.create(CanisObjectColumn.prototype);
+CanisObjectColumn_Sensors.prototype.objectClass = 'CanisObjectColumn_Sensors';
+CanisObjectColumn_Sensors.prototype.constructor = CanisObjectColumn_Sensors;
+CanisObjectColumn_Sensors.prototype.refresh = function(viewComponent) {
+	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+	var _this = this;
+};
 
 
 function CanisObjectColumn_SensorData(sensorObject, viewComponent) {

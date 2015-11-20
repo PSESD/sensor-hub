@@ -14,8 +14,11 @@ use yii\helpers\Url;
 
 class ServerCollection extends Collection
 {
-	public function getParentPackageItems($maxDepth = false, $objectType = false)
+	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
+		if ($itemLimit === null) {
+			$itemLimit = 4;
+		}
 		$items = [];
 		foreach ($this->getAll($maxDepth, $objectType) as $model) {
 			$item = [];
@@ -26,8 +29,11 @@ class ServerCollection extends Collection
 		return $items;
 	}
 
-	public function getChildPackageItems($maxDepth = false, $objectType = false)
+	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
+		if ($itemLimit === null) {
+			$itemLimit = 4;
+		}
 		$items = [];
 		$item = [];
 		$item['label'] = 'Servers';

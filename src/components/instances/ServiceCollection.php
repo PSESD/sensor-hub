@@ -14,14 +14,20 @@ use yii\helpers\Url;
 
 class ServiceCollection extends Collection
 {
-	public function getParentPackageItems($maxDepth = false, $objectType = false)
+	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
+		if ($itemLimit === null) {
+			$itemLimit = 4;
+		}
 		$items = [];
 		return $items;
 	}
 
-	public function getChildPackageItems($maxDepth = false, $objectType = false)
+	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
+		if ($itemLimit === null) {
+			$itemLimit = 3;
+		}
 		$items = [];
 		$item = [];
 		$all = $this->getAll($maxDepth, $objectType);
@@ -35,10 +41,9 @@ class ServiceCollection extends Collection
 		$hasDanger = false;
 		$hasWarning = false;
 		$itemCount = 1;
-		$itemLimit = 3;
 		$allServices = $this->getAll($maxDepth, 'service');
 		foreach ($allServices as $model) {
-			if ($itemCount > $itemLimit && count($allServices) !== $itemLimit) {
+			if ($itemLimit && $itemCount > $itemLimit && count($allServices) !== $itemLimit) {
 				$item['subitems']['services']['truncated'] = true;
 				break;
 			}

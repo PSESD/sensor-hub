@@ -60,8 +60,16 @@ abstract class Collection extends \yii\base\Object
 		}
 		$objects = [];
 		foreach ($this->_objects as $key => $item) {
-			if ($maxDepth !== false && $maxDepth < $item[0]) {
-				continue;
+			if ($maxDepth !== false) {
+				if (is_numeric($maxDepth)) {
+					if ($maxDepth < $item[0]) {
+						continue;
+					}
+				} elseif (is_array($maxDepth) && isset($maxDepth[$item[1]])) {
+					if ($maxDepth[$item[1]] < $item[0]) {
+						continue;
+					}
+				}
 			}
 			if ($objectType !== false && !in_array($item[1], $objectType)) {
 				continue;
@@ -77,19 +85,18 @@ abstract class Collection extends \yii\base\Object
 
 	public function add($depth, $objectType, $model, $data = [])
 	{
-		$this->_objects[$model->id] = [$depth, $objectType, $model->dataObject, $data];
+		$this->_objects[$model->id] = [$depth, $objectType, $model, $data];
 	}
 
-	abstract public function getChildPackageItems();
-	abstract public function getParentPackageItems();
-
-	public function getPackage($maxDepth = false, $objectType = false)
+	abstract public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false);
+	abstract public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false);
+	public function getPackage($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
 		$package = [];
 		if ($this->type === 'parents') {
-			$package['items'] = $this->getParentPackageItems($maxDepth, $objectType);
+			$package['items'] = $this->getParentPackageItems($itemLimit, $maxDepth, $objectType);
 		} else {
-			$package['items'] = $this->getChildPackageItems($maxDepth, $objectType);
+			$package['items'] = $this->getChildPackageItems($itemLimit, $maxDepth, $objectType);
 		}
 		return $package;
 	}

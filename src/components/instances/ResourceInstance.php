@@ -13,29 +13,24 @@ use canis\sensors\providers\ProviderInterface;
 
 class ResourceInstance extends Instance
 {
-    const COLLECT_DEPTH = 5;
+    const COLLECT_DEPTH = 4;
     
     public function getObjectType()
     {
         return 'resource';
     }
 
-    public function getParentObjects()
+    public function childModelsFromObjects()
     {
-        return $this->collectParentObjects(static::COLLECT_DEPTH);
+        return [];
     }
 
-    public function getChildObjects()
-    {
-        return $this->collectChildObjects(static::COLLECT_DEPTH);
-    }
-
-    public function getComponentPackage()
+    public function getComponentPackage($itemLimit = null)
     {
         $c = [];
-        $collections = $this->getParentObjects();
-        $c['servers'] = $collections['server']->getPackage(1);
-        $c['sites'] = $collections['site']->getPackage(4);
+        $collections = $this->collectParentModels();
+        $c['servers'] = $collections['server']->getPackage($itemLimit);
+        $c['sites'] = $collections['site']->getPackage($itemLimit);
         return $c;
     }
 

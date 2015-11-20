@@ -13,10 +13,11 @@ use canis\sensors\providers\ProviderInterface;
 use canis\sensors\serviceReferences\ServiceBinding;
 use canis\registry\models\Registry;
 use canis\sensorHub\models\Service;
+use canis\sensorHub\models\Contact as ContactModel;
 
 class SiteInstance extends Instance
 {
-    const COLLECT_DEPTH = 3;
+    const COLLECT_DEPTH = 4;
     public function getObjectType()
     {
         return 'site';
@@ -28,32 +29,36 @@ class SiteInstance extends Instance
     	return $events;
     }
 
-    public function getParentObjects()
+    public function childModelsFromObjects()
     {
-        return $this->collectParentObjects(static::COLLECT_DEPTH);
+        $collections = $this->collectChildModelsFromObjects();
+        return array_merge(
+            $collections['sensor']->getAll(3), 
+            $collections['resource']->getAll(['resource' => 4, 'resourceReference' => 1]), 
+            $collections['service']->getAll(1)
+        );
     }
 
-    public function getChildObjects()
-    {
-        return $this->collectChildObjects(static::COLLECT_DEPTH);
-    }
-
-    public function getComponentPackage()
+    public function getComponentPackage($itemLimit = null)
     {
         $c = [];
-        $collections = $this->getChildObjects();
-        $c['sensors'] = $collections['sensor']->getPackage(3);
-        $c['resources'] = $collections['resource']->getPackage(3);
-        $c['services'] = $collections['service']->getPackage(1);
+        $collections = $this->collectChildModels();
+        $c['sensors'] = $collections['sensor']->getPackage($itemLimit);
+        $c['resources'] = $collections['resource']->getPackage($itemLimit);
+        $c['services'] = $collections['service']->getPackage($itemLimit);
         return $c;
     }
-    
+
+    public function getHasContacts()
+    {
+        return true;
+    }
 
     public function getInfo()
     {
 
         $info = $this->object->getInfo();
-        $collections = $this->collectChildObjects(static::COLLECT_DEPTH);
+        $collections = $this->collectChildModels();
         $provides = [];
         $references = [];
         $boundIps = [];

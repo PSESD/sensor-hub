@@ -106,7 +106,7 @@ abstract class BaseBrowseController extends Controller
         Yii::$app->response->params['objectModel'] = $objectModel;
         Yii::$app->response->params['parentModel'] = $parentModel;
         $object = $objectModel->dataObject;
-        $children = $object->getChildObjects();
+        $children = $object->collectChildModels();
         $initial = [];
         $initial['object'] = $objectModel->dataObject->getPackage(true);
         $initial['parentObject'] = false;
@@ -138,7 +138,7 @@ abstract class BaseBrowseController extends Controller
     	}
     	Yii::$app->response->params['parentModel'] = $objectModel;
     	$object = $objectModel->dataObject;
-    	$children = $object->getChildObjects();
+    	$children = $object->collectChildModels();
     	if (empty($_GET['type']) || !isset($children[$_GET['type']])) {
     		throw \yii\web\NotFoundHttpException("Object type not found");
     	}
@@ -164,7 +164,7 @@ abstract class BaseBrowseController extends Controller
     	}
     	Yii::$app->response->params['parentModel'] = $objectModel;
     	$object = $objectModel->dataObject;
-    	$parents = $object->getParentObjects();
+    	$parents = $object->collectParentModels();
     	if (empty($_GET['type']) || !isset($parents[$_GET['type']])) {
     		throw \yii\web\NotFoundHttpException("Object type not found");
     	}

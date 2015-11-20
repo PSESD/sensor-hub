@@ -25,22 +25,23 @@ class ServiceInstance extends Instance
     	return $events;
     }
 
-    public function getParentObjects()
+
+    public function childModelsFromObjects()
     {
-        return $this->collectParentObjects(static::COLLECT_DEPTH);
+        $collections = $this->collectChildModelsFromObjects();
+        return array_merge(
+            $collections['sensor']->getAll(3),
+            $collections['resource']->getAll(1)
+        );
     }
 
-    public function getChildObjects()
-    {
-        return $this->collectChildObjects(static::COLLECT_DEPTH);
-    }
 
-    public function getComponentPackage()
+    public function getComponentPackage($itemLimit = null)
     {
         $c = [];
-        $collections = $this->getChildObjects();
-        $c['sensors'] = $collections['sensor']->getPackage(3);
-        $c['resources'] = $collections['resource']->getPackage(1);
+        $collections = $this->collectChildModels();
+        $c['sensors'] = $collections['sensor']->getPackage($itemLimit);
+        $c['resources'] = $collections['resource']->getPackage($itemLimit);
         return $c;
     }
 }

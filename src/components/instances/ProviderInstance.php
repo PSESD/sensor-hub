@@ -8,6 +8,7 @@
 namespace canis\sensorHub\components\instances;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 use canis\broadcaster\eventTypes\EventType;
 use canis\sensors\providers\ProviderInterface;
 use canis\sensors\base\Sensor as BaseSensor;
@@ -21,23 +22,25 @@ class ProviderInstance extends Instance
         return 'provider';
     }
 
-    public function getParentObjects()
+    public function childModelsFromObjects()
     {
-        return $this->collectParentObjects(static::COLLECT_DEPTH);
+        $collections = $this->collectChildModelsFromObjects();
+        return array_merge(
+            $collections['sensor']->getAll(3), 
+            $collections['resource']->getAll(1), 
+            $collections['site']->getAll(1), 
+            $collections['server']->getAll(1)
+        );
     }
 
-    public function getChildObjects()
-    {
-        return $this->collectChildObjects(static::COLLECT_DEPTH);
-    }
-
-    public function getComponentPackage()
+    public function getComponentPackage($itemLimit = null)
     {
         $c = [];
-        $collections = $this->getChildObjects();
-        $c['sensors'] = $collections['sensor']->getPackage(3);
-        $c['resources'] = $collections['resource']->getPackage(1);
-        $c['sites'] = $collections['site']->getPackage(1);
+        $collections = $this->collectChildModels();
+        $c['sensors'] = $collections['sensor']->getPackage($itemLimit);
+        $c['resources'] = $collections['resource']->getPackage($itemLimit);
+        $c['sites'] = $collections['site']->getPackage($itemLimit);
+        $c['server'] = $collections['server']->getPackage($itemLimit);
         return $c;
     }
 
@@ -65,15 +68,6 @@ class ProviderInstance extends Instance
 
     }
 
-    public function check($event)
-    {
-    	$providerSensor = $event->sensorInstance;
-    	$this->internalCheck($event);
-    	if ($event->pause === false) {
-    		$event->pause = $this->attributes['checkInterval'];
-    	}
-    }
-
     public function initialize($log, $initialInitialize = true)
     {   
         $this->log = $log;
@@ -83,6 +77,51 @@ class ProviderInstance extends Instance
         $this->log->addInfo("Finished initializing provider ({$id})");
         return $result;
     }
+
+    public function check($event)
+    {
+    	$providerSensor = $event->sensorInstance;
+        $this->internalCheck($event);
+        $this->internalUpdateRelations($event);
+    	if ($event->pause === false) {
+    		$event->pause = $this->attributes['checkInterval'];
+    	}
+    }
+
+    protected function internalUpdateRelations($event)
+    {
+        $_this = $this;
+        $modelsChecked = [];
+
+        $updateChildren = function($model) use($_this, &$modelsChecked, &$updateChildren) {
+            if (in_array($model->id, $modelsChecked)) { return true; }
+            $modelsChecked[] = $model->id;
+            $currentChildRelations = $model->queryChildRelations()->all();
+            $currentChildRelations = ArrayHelper::index($currentChildRelations, function ($relation) {
+                return $relation->child_object_id;
+            });
+            $childModels = $model->dataObject->childModelsFromObjects();
+            $baseRelation = ['parent_object_id' => $model->id, 'active' => 1];
+            $childRelations = [];
+            foreach ($childModels as $childModel) {
+                $updateChildren($childModel);
+                if (isset($currentChildRelations[$childModel->id])) {
+                    unset($currentChildRelations[$childModel->id]);
+                    continue;
+                }
+                $childRelation = $baseRelation;
+                $childRelation['child_object_id'] = $childModel->id;
+                $childRelations[] = $childRelation;
+            }
+            $model->setRelationModels($childRelations);
+            $model->save();
+            foreach ($currentChildRelations as $childRelation) {
+                $childRelation->delete();
+            }
+        };
+        return $updateChildren($this->model);
+    }
+
 
     protected function internalCheck($event)
     {

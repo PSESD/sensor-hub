@@ -89,7 +89,7 @@ class Resource extends \canis\db\ActiveRecordRegistry
         $models['Sensor'] = Sensor::find()->where(['id' => $this->object_id])->all();
         $models['Service'] = Service::find()->where(['id' => $this->object_id])->all();
         $models['ServiceReference'] = ServiceReference::find()->where(['id' => $this->object_id])->all();
-        $models['ResourceReference'] = ResourceReference::find()->where(['resource_id' => $this->id])->all();
+        // $models['ResourceReference'] = ResourceReference::find()->where(['resource_id' => $this->id])->all();
         $models['Server'] = Server::find()->where(['id' => $this->object_id])->all();
         $models['Site'] = Site::find()->where(['id' => $this->object_id])->all();
         return $models;
@@ -97,7 +97,8 @@ class Resource extends \canis\db\ActiveRecordRegistry
 
     public function childModels()
     {
-        $models = $this->dependentModels();
+        $models = [];
+        $models['ResourceReference'] = ResourceReference::find()->where(['resource_id' => $this->id, 'active' => 1])->all();
         return $models;
     }
 

@@ -113,4 +113,15 @@ class Provider extends \canis\db\ActiveRecordRegistry
         }
         return true;
     }
+
+
+    public function childModels()
+    {
+        $models = [];
+        $models['Site'] = Site::find()->where(['provider_id' => $this->id, 'active' => 1])->all();
+        $models['Server'] = Server::find()->where(['provider_id' => $this->id, 'active' => 1])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        return $models;
+    }
+
 }

@@ -86,8 +86,7 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             if (!$valid) {
                 $this->params['model']->validate();
             }
-            $this->params['model']->last_check = date("Y-m-d G:i:s");
-            if ($valid && $this->params['model']->save() && $model->initializeData(false)) {
+            if ($valid && $this->params['model']->save()) {
                 Yii::$app->response->success = 'Sensor provider \'' . $model->dataObject->object->name .'\' updated!';
                 Yii::$app->response->refresh = true;
                 return;

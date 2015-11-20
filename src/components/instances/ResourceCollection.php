@@ -14,14 +14,20 @@ use yii\helpers\Url;
 
 class ResourceCollection extends Collection
 {
-	public function getParentPackageItems($maxDepth = false, $objectType = false)
+	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
+		if ($itemLimit === null) {
+			$itemLimit = 4;
+		}
 		$items = [];
 		return $items;
 	}
 
-	public function getChildPackageItems($maxDepth = false, $objectType = false)
+	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
+		if ($itemLimit === null) {
+			$itemLimit = 4;
+		}
 		$items = [];
 		$item = [];
 		$all = $this->getAll($maxDepth, $objectType);
@@ -36,10 +42,9 @@ class ResourceCollection extends Collection
 		$hasDanger = false;
 		$hasWarning = false;
 		$itemCount = 1;
-		$itemLimit = 3;
 		$allResources = $this->getAll($maxDepth, 'resource');
 		foreach ($allResources as $model) {
-			if ($itemCount > $itemLimit && count($allResources) !== $itemLimit) {
+			if ($itemLimit && $itemCount > $itemLimit && count($allResources) !== $itemLimit) {
 				$item['subitems']['resources']['truncated'] = true;
 				break;
 			}

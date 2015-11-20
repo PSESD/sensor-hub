@@ -23,6 +23,7 @@ class ClassManager extends \canis\base\ClassManager
         return [
             'Registry' => 'canis\registry\models\Registry',
             'Relation' => 'canis\registry\models\Relation',
+            'RelationDependency' => 'canis\registry\models\RelationDependency',
 
             'Aca' => 'canis\acl\models\Aca',
             'Acl' => 'canis\acl\models\Acl',

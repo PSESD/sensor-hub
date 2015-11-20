@@ -27,21 +27,19 @@ class SensorInstance extends Instance
         return 'sensor';
     }
 
-    public function getParentObjects()
+    public function childModelsFromObjects()
     {
-        return $this->collectParentObjects(static::COLLECT_DEPTH);
+        $collections = $this->collectChildModelsFromObjects();
+        return array_merge(
+            $collections['sensor']->getAll(1)
+        );
     }
 
-    public function getChildObjects()
-    {
-        return $this->collectChildObjects(static::COLLECT_DEPTH);
-    }
-
-    public function getComponentPackage()
+    public function getComponentPackage($itemLimit = null)
     {
         $c = [];
-        $collections = $this->getChildObjects();
-        $c['sensors'] = $collections['sensor']->getPackage(1);
+        $collections = $this->collectChildModels();
+        $c['sensors'] = $collections['sensor']->getPackage($itemLimit);
         return $c;
     }
 

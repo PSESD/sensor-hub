@@ -20,18 +20,15 @@ class ResourceReferenceInstance extends Instance
         return 'resourceReference';
     }
 
-    public function getParentObjects()
+    public function childModelsFromObjects()
     {
-        return $this->collectParentObjects(static::COLLECT_DEPTH);
+        $collections = $this->collectChildModelsFromObjects();
+        return array_merge(
+            $collections['resource']->getAll(1, ['resource'])
+        );
     }
 
-    public function getChildObjects()
-    {
-        return $this->collectChildObjects(static::COLLECT_DEPTH);
-    }
-
-
-    public function getComponentPackage()
+    public function getComponentPackage($itemLimit = null)
     {
         $c = [];
         return $c;

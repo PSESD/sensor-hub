@@ -61,6 +61,7 @@ class Service extends \canis\db\ActiveRecordRegistry
         return [
             [['object_id', 'system_id', 'name'], 'required'],
             [['data'], 'string'],
+            [['active'], 'integer'],
             [['created', 'modified'], 'safe'],
             [['id', 'object_id'], 'string', 'max' => 36],
             [['system_id', 'name'], 'string', 'max' => 255],
@@ -120,7 +121,12 @@ class Service extends \canis\db\ActiveRecordRegistry
 
     public function childModels()
     {
-        $models = $this->dependentModels();
+        $models = [];
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Resource'] = Resource::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        
+        $models['ServiceReference'] = ServiceReference::find()->where(['service_id' => $this->id, 'active' => 1])->all();
         return $models;
     }
 

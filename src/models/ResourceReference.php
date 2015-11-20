@@ -56,6 +56,7 @@ class ResourceReference extends \canis\db\ActiveRecordRegistry
         return [
             [['object_id', 'resource_id'], 'required'],
             [['type', 'data'], 'string'],
+            [['active'], 'integer'],
             [['created', 'modified'], 'safe'],
             [['id', 'object_id', 'resource_id'], 'string', 'max' => 36],
             [['resource_id'], 'exist', 'skipOnError' => true, 'targetClass' => Resource::className(), 'targetAttribute' => ['resource_id' => 'id']],
@@ -108,8 +109,6 @@ class ResourceReference extends \canis\db\ActiveRecordRegistry
     public function dependentModels()
     {
         $models = [];
-        $models['Resource'] = Resource::find()->where(['id' => $this->object_id])->all();
-        $models['ResourceReference'] = ResourceReference::find()->where(['id' => $this->object_id])->all();
         return $models;
     }
 
@@ -126,9 +125,12 @@ class ResourceReference extends \canis\db\ActiveRecordRegistry
 
     public function childModels()
     {
-        $models = $this->dependentModels();
+        $models = [];
+        $models['Resource'] = Resource::find()->where(['id' => $this->resource_id, 'active' => 1])->all();
         if (($resourceProvider = Registry::getObject($this->object_id))) {
-            $models['ResourceProvider'] = [$resourceProvider];
+            if (!empty($resourceProvider->active)) {
+                $models['ResourceProvider'] = [$resourceProvider];
+            }
         }
         return $models;
     }

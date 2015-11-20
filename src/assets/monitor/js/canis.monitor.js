@@ -1,5 +1,6 @@
 function CanisMonitor($element, settings) {
     CanisComponent.call(this);
+    var _this = this;
 	this.$element = $element.addClass('monitor');
 	this.items = {};
 	this.elements = {};
@@ -7,6 +8,13 @@ function CanisMonitor($element, settings) {
 	console.log(this);
 	this.init();
 	this.isInitializing = false;
+	this.$element.on('remove', function() {
+        clearTimeout(_this.scheduledRefresh);
+        _this.$element = null;
+    });
+	this.$element.on('refresh', function() {
+		_this._refresh();
+	});
 }
 
 CanisMonitor.prototype = jQuery.extend(true, {}, CanisComponent.prototype);
@@ -59,6 +67,9 @@ CanisMonitor.prototype.scheduleRefresh = function() {
 	var _this = this;
 	if (this.scheduledRefresh !== undefined) {
 		clearTimeout(this.scheduledRefresh);
+	}
+	if (this.$element === null) {
+		return;
 	}
 	this.scheduledRefresh = setTimeout(function() {
 		_this._refresh();

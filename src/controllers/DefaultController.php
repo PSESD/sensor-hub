@@ -15,13 +15,12 @@ use canis\sensorHub\models\Instance;
 
 class DefaultController extends Controller
 {
-
 	/**
      * The landing page for the application.
      */
     public function actionIndex()
     {
-        Yii::$app->response->redirect = 'sensor/index';
+        Yii::$app->response->redirect = '/server/index';
     }
 }
 ?>

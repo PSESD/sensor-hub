@@ -56,6 +56,7 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
         return [
             [['object_id', 'service_id'], 'required'],
             [['type', 'data'], 'string'],
+            [['active'], 'integer'],
             [['created', 'modified'], 'safe'],
             [['id', 'object_id', 'service_id'], 'string', 'max' => 36],
             [['service_id'], 'exist', 'skipOnError' => true, 'targetClass' => Service::className(), 'targetAttribute' => ['service_id' => 'id']],
@@ -118,6 +119,7 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
         $models = [];
         $models['Resource'] = Resource::find()->where(['object_id' => $this->id])->all();
         $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id])->all();
         return $models;
     }
 
@@ -132,7 +134,11 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
 
     public function childModels()
     {
-        $models = $this->dependentModels();
+        $models = [];
+        $models['Resource'] = Resource::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Service'] = Service::find()->where(['id' => $this->service_id, 'active' => 1])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id, 'active' => 1])->all();
         if (($serviceProvider = Registry::getObject($this->object_id))) {
             $models['ServiceProvider'] = [$serviceProvider];
         }

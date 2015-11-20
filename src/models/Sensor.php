@@ -109,14 +109,14 @@ class Sensor extends \canis\db\ActiveRecordRegistry
     public function parentModels()
     {
         $models = [];
-        $models['Sensor'] = Sensor::find()->where(['id' => $this->object_id])->all();
+        $models['Sensor'] = Sensor::find()->where(['id' => $this->object_id, 'active' => 1])->all();
         return $models;
     }
 
     public function childModels()
     {
         $models = [];
-        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
         return $models;
     }
 

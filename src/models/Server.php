@@ -104,10 +104,10 @@ class Server extends \canis\db\ActiveRecordRegistry
     public function childModels()
     {
         $models = [];
-        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id])->all();
-        $models['Service'] = Service::find()->where(['object_id' => $this->id])->all();
-        $models['Resource'] = Resource::find()->where(['object_id' => $this->id])->all();
-        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Service'] = Service::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Resource'] = Resource::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id, 'active' => 1])->all();
         return $models;
     }
     

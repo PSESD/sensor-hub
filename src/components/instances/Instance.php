@@ -14,6 +14,8 @@ use canis\broadcaster\eventTypes\EventType;
 use canis\actions\Status;
 use linslin\yii2\curl;
 
+use canis\registry\models\Registry;
+
 use canis\sensors\resources\ResourceInterface;
 use canis\sensors\resourceReferences\ResourceReferenceInterface;
 use canis\sensors\sites\SiteInterface;
@@ -25,6 +27,7 @@ use canis\sensors\servers\ServerInterface;
 use canis\sensors\providers\ProviderInterface;
 
 use canis\sensorHub\components\base\Engine;
+use canis\sensorHub\models\Contact as ContactModel;
 use canis\sensorHub\models\Note as NoteModel;
 use canis\sensorHub\models\Site as SiteModel;
 use canis\sensorHub\models\Server as ServerModel;
@@ -39,7 +42,8 @@ abstract class Instance
 	extends \canis\base\Component
     implements \canis\broadcaster\BroadcastableInterface
 {
-    const EVENT_COLLECT_OBJECTS = 'collectObjects';
+    const EVENT_COLLECT_FROM_OBJECTS = 'collectFromObjects';
+    const EVENT_COLLECT_FROM_MODELS = 'collectFromModels';
 
     public $collectObjectCacheTime = 3600;
 	public $model;
@@ -75,7 +79,8 @@ abstract class Instance
     public function init()
     {
         parent::init();
-        $this->on(static::EVENT_COLLECT_OBJECTS, [$this, 'internalCollectObjects']);
+        $this->on(static::EVENT_COLLECT_FROM_OBJECTS, [$this, 'internalCollectFromObjects']);
+        $this->on(static::EVENT_COLLECT_FROM_MODELS, [$this, 'internalCollectFromModels']);
     }
 
     public function behaviors()
@@ -87,58 +92,77 @@ abstract class Instance
         );
     }
 
-    public function collectParentObjects($maxDepth = false, $refresh = false)
+    protected function getCollectEvent($type, $maxDepth = false)
     {
-        //$refresh = true;
-        //exit;
-        $cacheKey = [__CLASS__, __FUNCTION__, $this->model->id, $maxDepth];
-        if (!$refresh && ($cache = Cacher::get($cacheKey))) {
-            return $cache;
-        }
         $event = new CollectEvent;
-        $event->type = 'parents';
+        $event->type = $type;
+        $event->maxDepth = $maxDepth;
         $event->addCollection('sensor', new SensorCollection(['model' => $this->model]));
         $event->addCollection('server', new ServerCollection(['model' => $this->model]));
         $event->addCollection('site', new SiteCollection(['model' => $this->model]));
         $event->addCollection(['resource', 'resourceReference'], new ResourceCollection(['model' => $this->model]));
         $event->addCollection(['service', 'serviceReference'], new ServiceCollection(['model' => $this->model]));
-
-        $event->maxDepth = $maxDepth;
-        $this->trigger(static::EVENT_COLLECT_OBJECTS, $event);
-        Cacher::set($cacheKey, $event->collections, $this->collectObjectCacheTime);
-        return $event->collections;
+        return $event;
     }
 
-
-    public function collectChildObjects($maxDepth = false, $refresh = false)
+    public function collectParentModels()
     {
-        // $refresh = true;
-        $cacheKey = [__CLASS__, __FUNCTION__, $this->model->id, $maxDepth];
-        if (!$refresh && ($cache = Cacher::get($cacheKey))) {
-            return $cache;
+        if (isset($this->_cache['parent_models'])) {
+            return $this->_cache['parent_models'];
         }
-        $event = new CollectEvent;
-        $event->type = 'children';
-        $event->addCollection('sensor', new SensorCollection(['model' => $this->model]));
-        $event->addCollection('server', new ServerCollection(['model' => $this->model]));
-        $event->addCollection('site', new SiteCollection(['model' => $this->model]));
-        $event->addCollection(['resource', 'resourceReference'], new ResourceCollection(['model' => $this->model]));
-        $event->addCollection(['service', 'serviceReference'], new ServiceCollection(['model' => $this->model]));
-        // SensorModel::preloadAll();
-        // ServerModel::preloadAll();
-        // SiteModel::preloadAll();
-        // ResourceReferenceModel::preloadAll();
-        // ResourceModel::preloadAll();
-        // ServiceModel::preloadAll();
-        // ServiceReferenceModel::preloadAll();
+        $maxDepth = static::COLLECT_DEPTH;
+        $event = $this->getCollectEvent('parents', $maxDepth);
+        $this->trigger(static::EVENT_COLLECT_FROM_MODELS, $event);
+        return $this->_cache['parent_models'] = $event->collections;
+    }
 
-        $event->maxDepth = $maxDepth;
-        $this->trigger(static::EVENT_COLLECT_OBJECTS, $event);
-        Cacher::set($cacheKey, $event->collections, $this->collectObjectCacheTime);
+
+    public function collectChildModels()
+    {
+        if (isset($this->_cache['child_models'])) {
+            return $this->_cache['child_models'];
+        }
+        $maxDepth = static::COLLECT_DEPTH;
+        $event = $this->getCollectEvent('children', $maxDepth);
+        $this->trigger(static::EVENT_COLLECT_FROM_MODELS, $event);
+        return $this->_cache['child_models']= $event->collections;
+    }
+
+    public function collectParentModelsFromObjects()
+    {
+        $maxDepth = static::COLLECT_DEPTH;
+        $event = $this->getCollectEvent('parents', $maxDepth);
+        $this->trigger(static::EVENT_COLLECT_FROM_OBJECTS, $event);
         return $event->collections;
     }
 
-    public function internalCollectObjects($event)
+
+    public function collectChildModelsFromObjects()
+    {
+        $maxDepth = static::COLLECT_DEPTH;
+        $event = $this->getCollectEvent('children', $maxDepth);
+        $this->trigger(static::EVENT_COLLECT_FROM_OBJECTS, $event);
+        return $event->collections;
+    }
+
+    public function internalCollectFromModels($event)
+    {
+        if ($event->type === 'children') {
+            $models = $this->model->getChildIds();
+        } else {
+            $models = $this->model->getParentIds();
+        }
+        foreach ($models as $modelId) {
+            $model = Registry::getObject($modelId);
+            if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \canis\sensors\base\BaseInterface)) {
+                continue;
+            }
+            $event->pass($model);
+            $recurse[] = $model;
+        }
+    }
+
+    public function internalCollectFromObjects($event)
     {
         if ($event->type === 'children') {
             $modelTypes = $this->model->childModels();
@@ -151,14 +175,14 @@ abstract class Instance
                 if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \canis\sensors\base\BaseInterface)) {
                     continue;
                 }
-                $event->pass($model, ['parent' => get_class($this->model) .':'. $this->model->id]);
+                $event->pass($model);
                 $recurse[] = $model;
             }
         }
         $event->depth++;
         foreach ($recurse as $model) {
             if ($event->maxDepth === false || $event->maxDepth > $event->depth) {
-                $model->dataObject->trigger(static::EVENT_COLLECT_OBJECTS, $event);
+                $model->dataObject->trigger(static::EVENT_COLLECT_FROM_OBJECTS, $event);
             }
         }
         $event->depth--;
@@ -174,14 +198,31 @@ abstract class Instance
             $parentId = $parentObject->model->primaryKey;
         }
         $self = $this;
+        // $uniqueAttributes = [];
         $uniqueAttributes = ['provider_id' => $parentId];
         $findAttributes = [
             'system_id' => $object->id,
-            'service_id' => function($object, $parentObject) use ($self) { return $object->discoverServiceId($self); },
-            'resource_id' => function($object, $parentObject) use ($self) { return $object->discoverResourceId($self); },
-            'provider_id' => isset($parentObject) ? $parentObject->model->primaryKey : null,
-            'object_id' => isset($parentObject) ? $parentObject->model->primaryKey : null
+            //  'service_id' => function($object, $parentObject) use ($self) { return $object->discoverServiceId($self); },
+            //  'resource_id' => function($object, $parentObject) use ($self) { return $object->discoverResourceId($self); },
+            //  'provider_id' => isset($parentObject) ? $parentObject->model->primaryKey : null,
+            //  'object_id' => isset($parentObject) ? $parentObject->model->primaryKey : null
         ];
+        if ($object instanceof \canis\sensors\base\Sensor
+            ||  $object instanceof \canis\sensors\services\Base
+            ) {
+            $findAttributes['object_id'] = isset($parentObject) ? $parentObject->model->primaryKey : null;
+        }
+        if ($object instanceof \canis\sensors\serviceReferences\Base
+            ) {
+            $findAttributes['object_id'] = isset($parentObject) ? $parentObject->model->primaryKey : null;
+            $findAttributes['service_id'] = function($object, $parentObject) use ($self) { return $object->discoverServiceId($self); };
+        }
+        if ($object instanceof \canis\sensors\resourceReferences\Base
+            ) {
+            $findAttributes['object_id'] = isset($parentObject) ? $parentObject->model->primaryKey : null;
+            $findAttributes['resource_id'] = function($object, $parentObject) use ($self) { return $object->discoverResourceId($self); };
+        }
+
         foreach ($findAttributes as $attribute => $value) {
             if ($dummyModel->hasAttribute($attribute)) {
                 if (is_callable($value)) {
@@ -197,9 +238,11 @@ abstract class Instance
             $model = $modelClass::find()->where($where)->one();
         }
         if (!empty($model)) {
-            foreach ($uniqueAttributes as $attribute => $value) {
-                if ($model->hasAttribute($attribute) && $model->{$attribute} !== $value) {
-                    return false;
+            if ($model->hasAttribute('active') && !empty($model->active)) {
+                foreach ($uniqueAttributes as $attribute => $value) {
+                    if ($model->hasAttribute($attribute) && $model->{$attribute} !== $value) {
+                        return false;
+                    }
                 }
             }
             return $model;
@@ -344,8 +387,13 @@ abstract class Instance
                 }
             }
             foreach ($currentModels as $model) {
-                $this->log->addInfo("Deleting old model {$model->descriptor} ($model->id)");
-                $model->delete();
+                $this->log->addInfo("Deactivating old model {$model->descriptor} ($model->id)");
+                if ($model->hasAttribute('active')) {
+                    $model->active = 0;
+                    $model->save();
+                } else {
+                    $model->delete();
+                }
             }
         }
         // $object->model->detachKnownBehaviorsExcept(['Registry', 'Relatable', 'Blame', 'Data']);
@@ -373,9 +421,9 @@ abstract class Instance
         return $models;
     }
 
-    abstract public function getChildObjects();
-    abstract public function getParentObjects();
-    abstract public function getComponentPackage();
+    abstract public function childModelsFromObjects();
+
+    abstract public function getComponentPackage($viewLimit = null);
 
     public function getPackage($viewPackage = false)
     {
@@ -385,19 +433,53 @@ abstract class Instance
         $package['url'] = Url::to([$this->getObjectType() . '/view', 'id' => $this->model->id]);
         $package['descriptor'] = $this->model->descriptor;
         $package['subdescriptor'] = $this->model->subdescriptor;
-        $package['components'] = $this->getComponentPackage();
+        $itemLimit = null;
+        if ($viewPackage) {
+            $itemLimit = false;
+        }
+        $package['components'] = $this->getComponentPackage($itemLimit);
         $package['info'] = $this->getInfo();
         if ($viewPackage) {
             $package['view'] = [];
             $package['view']['info'] = ['handler' => 'info'];
             $package['view']['notes'] = ['handler' => 'notes', 'items' => []];
-            foreach (NoteModel::find()->where(['object_id' => $this->model->id])->all() as $note) {
-                $package['notes']['items'][$note->id] = $note->attributes;
+            if ($this->hasNotes) {
+                foreach (NoteModel::find()->where(['object_id' => $this->model->id])->all() as $note) {
+                    $package['view']['notes']['items'][$note->id] = $note->attributes;
+                }
+                $package['view']['notes']['urls'] = [];
+                $package['view']['notes']['urls']['create'] = Url::to(['/note/create', 'objectId' => '__objectId__']);
+                $package['view']['notes']['urls']['update'] = Url::to(['/note/update', 'id' => '__id__']);
+                $package['view']['notes']['urls']['delete'] = Url::to(['/note/delete', 'id' => '__id__']);
             }
+
+            if ($this->hasContacts) {
+                $package['view']['contacts'] = ['handler' => 'contacts', 'items' => []];
+                foreach (ContactModel::find()->where(['object_id' => $this->model->id])->all() as $contact) {
+                    $package['view']['contacts']['items'][$note->id] = $contact->attributes;
+                }
+                $package['view']['contacts']['urls'] = [];
+                $package['view']['contacts']['urls']['create'] = Url::to(['/contact/create']);
+            }
+            if (!empty($package['components']['sensors']['items']['sensor-button']['subitems'])) {
+                $package['view']['sensors'] = ['handler' => 'sensors', 'columns' => 12, 'priority' => 99999999, 'items' => $package['components']['sensors']['items']['sensor-button']['subitems']];
+            }
+            unset($package['components']);
         }
         // $package['object'] = $this->object->getPackage();
         $package['attributes'] = $this->attributes;
         return $package;
+    }
+
+    public function getHasContacts()
+    {
+        return false;
+    }
+
+
+    public function getHasNotes()
+    {
+        return true;
     }
 
     public function getInfo()

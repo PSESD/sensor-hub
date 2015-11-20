@@ -14,14 +14,20 @@ use yii\helpers\Url;
 
 class SensorCollection extends Collection
 {
-	public function getParentPackageItems($maxDepth = false, $objectType = false)
+	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
+		if ($itemLimit === null) {
+			$itemLimit = 4;
+		}
 		$items = [];
 		return $items;
 	}
 
-	public function getChildPackageItems($maxDepth = false, $objectType = false)
+	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
 	{
+		if ($itemLimit === null) {
+			$itemLimit = 4;
+		}
 		$items = [];
 		$item = [];
 		$all = $this->getAll($maxDepth, $objectType);
@@ -34,9 +40,8 @@ class SensorCollection extends Collection
 		$hasWarning = false;
 		//\d($all);exit;
 		$itemCount = 1;
-		$itemLimit = 4;
 		foreach ($all as $model) {
-			if ($itemCount > $itemLimit && count($all) !== $itemLimit) {
+			if ($itemLimit && $itemCount > $itemLimit && count($all) !== $itemLimit) {
 				$item['truncated'] = true;
 				break;
 			}
