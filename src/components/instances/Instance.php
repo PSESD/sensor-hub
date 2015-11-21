@@ -425,6 +425,42 @@ abstract class Instance
 
     abstract public function getComponentPackage($viewLimit = null);
 
+    public function getViewPackage($package)
+    {
+        $view = [];
+        $view['info'] = ['handler' => 'info'];
+        if ($this->hasNotes) {
+            $view['notes'] = ['handler' => 'notes', 'items' => []];
+            foreach (NoteModel::find()->where(['object_id' => $this->model->id])->all() as $model) {
+                $view['notes']['items'][$model->id] = $model->attributes;
+                $view['notes']['items'][$model->id]['date'] = date("F d, Y", strtotime($model->modified));
+            }
+            $view['notes']['urls'] = [];
+            $view['notes']['urls']['create'] = Url::to(['/note/create', 'objectId' => '__objectId__']);
+            $view['notes']['urls']['update'] = Url::to(['/note/update', 'id' => '__id__']);
+            $view['notes']['urls']['delete'] = Url::to(['/note/delete', 'id' => '__id__']);
+            $view['notes']['urls']['view'] = Url::to(['/note/view', 'id' => '__id__']);
+        }
+
+        if ($this->hasContacts) {
+            $view['contacts'] = ['handler' => 'contacts', 'items' => []];
+            foreach (ContactModel::find()->where(['object_id' => $this->model->id])->all() as $model) {
+                $view['contacts']['items'][$model->id] = $model->attributes;
+                $view['contacts']['items'][$model->id]['descriptor'] = $model->descriptor;
+                $view['contacts']['items'][$model->id]['date'] = date("F d, Y", strtotime($model->modified));
+            }
+            $view['contacts']['urls'] = [];
+            $view['contacts']['urls']['create'] = Url::to(['/contact/create', 'objectId' => '__objectId__']);
+            $view['contacts']['urls']['update'] = Url::to(['/contact/update', 'id' => '__id__']);
+            $view['contacts']['urls']['delete'] = Url::to(['/contact/delete', 'id' => '__id__']);
+            $view['contacts']['urls']['view'] = Url::to(['/contact/view', 'id' => '__id__']);
+        }
+        if (!empty($package['components']['sensors']['items']['sensor-button']['subitems'])) {
+            $view['sensors'] = ['handler' => 'sensors', 'columns' => 12, 'priority' => 99999999, 'items' => $package['components']['sensors']['items']['sensor-button']['subitems']];
+        }
+        return $view;
+    }
+
     public function getPackage($viewPackage = false)
     {
         $package = [];
@@ -440,30 +476,7 @@ abstract class Instance
         $package['components'] = $this->getComponentPackage($itemLimit);
         $package['info'] = $this->getInfo();
         if ($viewPackage) {
-            $package['view'] = [];
-            $package['view']['info'] = ['handler' => 'info'];
-            $package['view']['notes'] = ['handler' => 'notes', 'items' => []];
-            if ($this->hasNotes) {
-                foreach (NoteModel::find()->where(['object_id' => $this->model->id])->all() as $note) {
-                    $package['view']['notes']['items'][$note->id] = $note->attributes;
-                }
-                $package['view']['notes']['urls'] = [];
-                $package['view']['notes']['urls']['create'] = Url::to(['/note/create', 'objectId' => '__objectId__']);
-                $package['view']['notes']['urls']['update'] = Url::to(['/note/update', 'id' => '__id__']);
-                $package['view']['notes']['urls']['delete'] = Url::to(['/note/delete', 'id' => '__id__']);
-            }
-
-            if ($this->hasContacts) {
-                $package['view']['contacts'] = ['handler' => 'contacts', 'items' => []];
-                foreach (ContactModel::find()->where(['object_id' => $this->model->id])->all() as $contact) {
-                    $package['view']['contacts']['items'][$note->id] = $contact->attributes;
-                }
-                $package['view']['contacts']['urls'] = [];
-                $package['view']['contacts']['urls']['create'] = Url::to(['/contact/create']);
-            }
-            if (!empty($package['components']['sensors']['items']['sensor-button']['subitems'])) {
-                $package['view']['sensors'] = ['handler' => 'sensors', 'columns' => 12, 'priority' => 99999999, 'items' => $package['components']['sensors']['items']['sensor-button']['subitems']];
-            }
+            $package['view'] = $this->getViewPackage($package);
             unset($package['components']);
         }
         // $package['object'] = $this->object->getPackage();

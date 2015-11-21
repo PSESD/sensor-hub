@@ -30,6 +30,7 @@ use canis\auth\models\User;
  */
 class Contact extends \canis\db\ActiveRecordRegistry
 {
+    public $descriptorField = ['first_name', 'last_name'];
     /**
      * @inheritdoc
      */
@@ -44,7 +45,7 @@ class Contact extends \canis\db\ActiveRecordRegistry
     public function rules()
     {
         return [
-            [['object_id'], 'required'],
+            [['object_id', 'first_name', 'last_name'], 'required'],
             [['is_billing', 'is_technical'], 'integer'],
             [['created', 'modified'], 'safe'],
             [['id', 'object_id', 'created_user_id', 'modified_user_id'], 'string', 'max' => 36],
@@ -63,8 +64,8 @@ class Contact extends \canis\db\ActiveRecordRegistry
         return [
             'id' => 'ID',
             'object_id' => 'Object ID',
-            'is_billing' => 'Is Billing',
-            'is_technical' => 'Is Technical',
+            'is_billing' => 'Billing Contact?',
+            'is_technical' => 'Technical Contact?',
             'first_name' => 'First Name',
             'last_name' => 'Last Name',
             'email' => 'Email',

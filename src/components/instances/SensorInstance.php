@@ -146,6 +146,17 @@ class SensorInstance extends Instance
         return false;
     }
 
+    public function getHasContacts()
+    {
+        return false;
+    }
+
+
+    public function getHasNotes()
+    {
+        return false;
+    }
+
     public function hasDataPoint()
     {
         return $this->object instanceof SensorDataInterface;

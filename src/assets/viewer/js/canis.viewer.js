@@ -67,7 +67,7 @@ CanisSensorObjectViewer.prototype.scheduleRefresh = function() {
 	}
 	this.scheduledRefresh = setTimeout(function() {
 		_this._refresh();
-	}, 5000);
+	}, 15000);
 };
 
 CanisSensorObjectViewer.prototype._refresh = function() {
@@ -98,7 +98,7 @@ CanisSensorObject.prototype.init = function() {
 }
 
 CanisSensorObject.prototype.refresh = function(item) {
-	console.log(['refresh', item, this.constructor.name]);
+	// console.log(['refresh', item, this.constructor.name]);
 	var _this = this;
 	this.item = item;
 	var colsToSplit = [];
@@ -122,7 +122,7 @@ CanisSensorObject.prototype.refresh = function(item) {
 		}
 	    var dataTypeClass = 'CanisObjectColumn_' + viewComponent.handler.capitalize();
 	    if (window[dataTypeClass] !== undefined) {
-	    	if (!_this.columns[index]) {
+	    	if (_this.columns[index] === undefined) {
 	    		_this.columns[index] = new window[dataTypeClass](_this, viewComponent);
 	    	} else {
 	    		_this.columns[index].refresh(viewComponent);
@@ -207,14 +207,45 @@ CanisObjectColumn.prototype.parseUrl = function(url, replacements) {
 };
 
 function CanisObjectColumn_Notes(sensorObject, viewComponent) {
+    this.items = {};
     CanisObjectColumn.call(this, sensorObject, viewComponent);
 }
+
 CanisObjectColumn_Notes.prototype = Object.create(CanisObjectColumn.prototype);
 CanisObjectColumn_Notes.prototype.objectClass = 'CanisObjectColumn_Notes';
 CanisObjectColumn_Notes.prototype.constructor = CanisObjectColumn_Notes;
+
+CanisObjectColumn_Notes.prototype.init = function(viewComponent) {
+	CanisObjectColumn.prototype.init.call(this, viewComponent);
+
+    this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No notes have been added').appendTo(this.elements.$canvas);
+    this.elements.$list = $("<div />", {'class': 'list-group'}).appendTo(this.elements.$canvas);
+};
 CanisObjectColumn_Notes.prototype.refresh = function(viewComponent) {
 	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
+	var hasItems = false;
+	jQuery.each(this.viewComponent.items, function(index, item) {
+		hasItems = true;
+		if (_this.items[item.id] === undefined) {
+			_this.items[item.id] = {'item': item, 'elements': {}};
+			_this.items[item.id].elements.$item = $("<div />", {'class': 'list-group-item'}).appendTo(_this.elements.$list);
+			_this.items[item.id].elements.$actions = $("<div />", {'class': 'btn-group btn-group-xs pull-right'}).appendTo(_this.items[item.id].elements.$item);
+			_this.items[item.id].elements.$heading = $("<a />", {'href': _this.parseUrl(_this.component.urls.view, {'id': item.id}), 'class': 'list-group-item-heading', 'data-handler': 'background'}).appendTo(_this.items[item.id].elements.$item);
+			_this.items[item.id].elements.$subheader = $("<div />", {'class': 'list-group-item-text'}).appendTo(_this.items[item.id].elements.$item);
+			
+			_this.items[item.id].elements.$update = $("<a />", {'href': _this.parseUrl(_this.component.urls.update, {'id': item.id}), 'class': 'btn btn-default fa fa-wrench', 'data-handler': 'background'}).appendTo(_this.items[item.id].elements.$actions);
+			_this.items[item.id].elements.$delete = $("<a />", {'href': _this.parseUrl(_this.component.urls.delete, {'id': item.id}), 'class': 'btn btn-danger fa fa-trash-o', 'data-handler': 'background'}).appendTo(_this.items[item.id].elements.$actions);
+			
+		}
+		_this.items[item.id].elements.$heading.html(item.title);
+		_this.items[item.id].elements.$subheader.html(item.date);
+	});
+	if (hasItems) {
+		this.elements.$emptyNotice.hide();
+	} else {
+		this.elements.$emptyNotice.show();
+	}
 };
 
 CanisObjectColumn_Notes.prototype.getPanelHeading = function() {
@@ -226,20 +257,58 @@ CanisObjectColumn_Notes.prototype.getPanelHeading = function() {
 };
 
 function CanisObjectColumn_Contacts(sensorObject, viewComponent) {
+    this.items = {};
     CanisObjectColumn.call(this, sensorObject, viewComponent);
 }
 CanisObjectColumn_Contacts.prototype = Object.create(CanisObjectColumn.prototype);
 CanisObjectColumn_Contacts.prototype.objectClass = 'CanisObjectColumn_Contacts';
 CanisObjectColumn_Contacts.prototype.constructor = CanisObjectColumn_Contacts;
+
+CanisObjectColumn_Contacts.prototype.init = function(viewComponent) {
+	CanisObjectColumn.prototype.init.call(this, viewComponent);
+
+    this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No contacts have been added').appendTo(this.elements.$canvas);
+    this.elements.$list = $("<div />", {'class': 'list-group'}).appendTo(this.elements.$canvas);
+};
 CanisObjectColumn_Contacts.prototype.refresh = function(viewComponent) {
 	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
+	var hasItems = false;
+	jQuery.each(this.viewComponent.items, function(index, item) {
+		hasItems = true;
+		if (_this.items[item.id] === undefined) {
+			_this.items[item.id] = {'item': item, 'elements': {}};
+			_this.items[item.id].elements.$item = $("<div />", {'class': 'list-group-item'}).appendTo(_this.elements.$list);
+			_this.items[item.id].elements.$actions = $("<div />", {'class': 'btn-group btn-group-xs pull-right'}).appendTo(_this.items[item.id].elements.$item);
+			_this.items[item.id].elements.$heading = $("<a />", {'href': _this.parseUrl(_this.component.urls.view, {'id': item.id}), 'class': 'list-group-item-heading', 'data-handler': 'background'}).appendTo(_this.items[item.id].elements.$item);
+			_this.items[item.id].elements.$subheader = $("<div />", {'class': 'list-group-item-text'}).appendTo(_this.items[item.id].elements.$item);
+			
+			_this.items[item.id].elements.$update = $("<a />", {'href': _this.parseUrl(_this.component.urls.update, {'id': item.id}), 'class': 'btn btn-default fa fa-wrench', 'data-handler': 'background'}).appendTo(_this.items[item.id].elements.$actions);
+			_this.items[item.id].elements.$delete = $("<a />", {'href': _this.parseUrl(_this.component.urls.delete, {'id': item.id}), 'class': 'btn btn-danger fa fa-trash-o', 'data-handler': 'background'}).appendTo(_this.items[item.id].elements.$actions);
+			
+		}
+		_this.items[item.id].elements.$heading.html(item.descriptor);
+		var roles = [];
+		if (item.is_billing == 1) {
+			roles.push('Billing');
+		}
+		if (item.is_technical == 1) {
+			roles.push('Technical');
+		}
+		_this.items[item.id].elements.$subheader.html(roles.join(', '));
+	});
+	if (hasItems) {
+		this.elements.$emptyNotice.hide();
+	} else {
+		this.elements.$emptyNotice.show();
+	}
 };
+
 CanisObjectColumn_Contacts.prototype.getPanelHeading = function() {
 	var heading = {};
 	heading.label = this.component.handler.capitalize();
 	heading.menu = {};
-	heading.menu.createItem = {'label': 'Create', 'icon': 'fa fa-plus', 'background': true, 'url': this.component.urls.create};
+	heading.menu.createItem = {'label': 'Create', 'icon': 'fa fa-plus', 'background': true, 'url': this.parseUrl(this.component.urls.create)};
 	return heading;
 };
 
