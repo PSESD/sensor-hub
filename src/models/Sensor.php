@@ -27,6 +27,7 @@ use canis\registry\models\Registry;
  */
 class Sensor extends \canis\db\ActiveRecordRegistry
 {    
+    use SensorObjectTrait;
     /**
      * @inheritdoc
      */
@@ -113,10 +114,15 @@ class Sensor extends \canis\db\ActiveRecordRegistry
         return $models;
     }
 
-    public function childModels()
+    public function childModels($active = true)
     {
+        if ($active) {
+            $active = 1;
+        } else {
+            $active = [0, 1];
+        }
         $models = [];
-        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => $active])->all();
         return $models;
     }
 

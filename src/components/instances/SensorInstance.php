@@ -161,4 +161,13 @@ class SensorInstance extends Instance
     {
         return $this->object instanceof SensorDataInterface;
     }
+
+    public function getViewPackage($package)
+    {
+        $view = parent::getViewPackage($package);
+        $view['state'] = ['handler' => 'sensorState', 'state' => $this->model->state];
+        $view['data'] = ['handler' => 'sensorData', 'items' => []];
+        $view['events'] = ['handler' => 'sensorEvents', 'items' => []];
+        return $view;
+    }
 }

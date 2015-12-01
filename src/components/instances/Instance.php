@@ -157,6 +157,9 @@ abstract class Instance
             if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \canis\sensors\base\BaseInterface)) {
                 continue;
             }
+            if ($model->hasAttribute('active') && empty($model->active)) {
+                continue;
+            }
             $event->pass($model);
             $recurse[] = $model;
         }
@@ -344,9 +347,6 @@ abstract class Instance
                     $this->log->addWarning("{$object->name} could not be set up");
                     return false;
                 }
-                if ($object->model->hasAttribute('active')) {
-                    $object->model->active = 1;
-                }
                 if (!$object->model->save()) {
                     $this->log->addError('Unable to save object model', ['class' => get_class($object->model), 'attributes' => $object->model->attributes, 'errors' => $object->model->errors]);
                     \d($object->model->errors);
@@ -355,6 +355,13 @@ abstract class Instance
             }
         } else {
             $this->log->addInfo("Object " . get_class($object->model) ." with ID " . $object->id ." already created... updating!");
+        }
+        if ($object->model->hasAttribute('active')) {
+            if ($object->model->isNewRecord) {
+                $object->model->active = 1;
+            } else {
+                $object->model->activate();
+            }
         }
         if (!$configured) {
             if (!$this->internalConfigModel($object, $parentObject, $object->model)) {
@@ -388,12 +395,7 @@ abstract class Instance
             }
             foreach ($currentModels as $model) {
                 $this->log->addInfo("Deactivating old model {$model->descriptor} ($model->id)");
-                if ($model->hasAttribute('active')) {
-                    $model->active = 0;
-                    $model->save();
-                } else {
-                    $model->delete();
-                }
+                $model->deactivate();
             }
         }
         // $object->model->detachKnownBehaviorsExcept(['Registry', 'Relatable', 'Blame', 'Data']);
@@ -428,7 +430,9 @@ abstract class Instance
     public function getViewPackage($package)
     {
         $view = [];
-        $view['info'] = ['handler' => 'info'];
+        if (!empty($package['info'])) {
+            $view['info'] = ['handler' => 'info', 'columns' => 4];
+        }
         if ($this->hasNotes) {
             $view['notes'] = ['handler' => 'notes', 'items' => []];
             foreach (NoteModel::find()->where(['object_id' => $this->model->id])->all() as $model) {
@@ -455,8 +459,48 @@ abstract class Instance
             $view['contacts']['urls']['delete'] = Url::to(['/contact/delete', 'id' => '__id__']);
             $view['contacts']['urls']['view'] = Url::to(['/contact/view', 'id' => '__id__']);
         }
-        if (!empty($package['components']['sensors']['items']['sensor-button']['subitems'])) {
-            $view['sensors'] = ['handler' => 'sensors', 'columns' => 12, 'priority' => 99999999, 'items' => $package['components']['sensors']['items']['sensor-button']['subitems']];
+        $listableComponents = [];
+        $listableComponents['services'] = [
+            'item' => 'service-button',
+            'subitem' => 'services',
+            'label' => 'Services',
+            'viewUrl' => Url::to(['/service/view', 'id' => '__id__'])
+        ];
+        $listableComponents['resources'] = [
+            'item' => 'resource-button',
+            'subitem' => 'resources',
+            'label' => 'Provided Resources',
+            'viewUrl' => Url::to(['/resource/view', 'id' => '__id__'])
+        ];
+        $listableComponents['sites'] = [
+            'item' => 'site-button',
+            'label' => 'Sites',
+            'viewUrl' => Url::to(['/site/view', 'id' => '__id__'])
+        ];
+        $listableComponents['sensors'] = [
+            'item' => 'sensor-button',
+            'label' => 'Sensors',
+            'viewUrl' => Url::to(['/sensor/view', 'id' => '__id__'])
+        ];
+        $n = 0;
+        foreach ($listableComponents as $key => $component) {
+            if (!empty($package['components'][$key]['items'][$component['item']]['subitems'])) {
+                $items = $package['components'][$key]['items'][$component['item']]['subitems'];
+                if (isset($component['subitem'])) {
+                    if (!isset($items[$component['subitem']]) || !($items = $items[$component['subitem']]['subitems']) || empty($items)) {
+                        continue;
+                    }
+                }
+                $view[$key] = [
+                    'handler' => 'list', 
+                    'header' => $component['label'], 
+                    'priority' => 99999999-$n, 
+                    'items' => $items,
+                    'minColumns' => 6,
+                    'urls' => ['view' => $component['viewUrl']]
+                ];
+            }
+            $n++;
         }
         return $view;
     }

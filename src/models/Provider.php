@@ -12,7 +12,7 @@ use canis\registry\models\Registry;
  * @property string $system_id
  * @property resource $data
  * @property integer $active
- * @property string $last_check
+ * @property string $last_refresh
  * @property string $created
  * @property string $modified
  *
@@ -20,6 +20,7 @@ use canis\registry\models\Registry;
  */
 class Provider extends \canis\db\ActiveRecordRegistry
 {
+    use SensorObjectTrait;
     public function getContextualDescriptor($parent = false)
     {
         return $this->descriptor;
@@ -60,7 +61,7 @@ class Provider extends \canis\db\ActiveRecordRegistry
             [['system_id'], 'required'],
             [['data'], 'string'],
             [['active'], 'integer'],
-            [['last_check', 'created', 'modified'], 'safe'],
+            [['last_refresh', 'created', 'modified'], 'safe'],
             [['id'], 'string', 'max' => 36],
             [['system_id'], 'string', 'max' => 255],
             [['id'], 'exist', 'skipOnError' => true, 'targetClass' => Registry::className(), 'targetAttribute' => ['id' => 'id']],
@@ -77,7 +78,7 @@ class Provider extends \canis\db\ActiveRecordRegistry
             'system_id' => 'System ID',
             'data' => 'Data',
             'active' => 'Active',
-            'last_check' => 'Last Check',
+            'last_refresh' => 'Last Refresh',
             'created' => 'Created',
             'modified' => 'Modified',
         ];
@@ -115,12 +116,17 @@ class Provider extends \canis\db\ActiveRecordRegistry
     }
 
 
-    public function childModels()
+    public function childModels($active = true)
     {
+        if ($active) {
+            $active = 1;
+        } else {
+            $active = [0, 1];
+        }
         $models = [];
-        $models['Site'] = Site::find()->where(['provider_id' => $this->id, 'active' => 1])->all();
-        $models['Server'] = Server::find()->where(['provider_id' => $this->id, 'active' => 1])->all();
-        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Site'] = Site::find()->where(['provider_id' => $this->id, 'active' => $active])->all();
+        $models['Server'] = Server::find()->where(['provider_id' => $this->id, 'active' => $active])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => $active])->all();
         return $models;
     }
 

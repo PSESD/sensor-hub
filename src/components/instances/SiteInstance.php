@@ -42,10 +42,13 @@ class SiteInstance extends Instance
     public function getComponentPackage($itemLimit = null)
     {
         $c = [];
-        $collections = $this->collectChildModels();
-        $c['sensors'] = $collections['sensor']->getPackage($itemLimit);
-        $c['resources'] = $collections['resource']->getPackage($itemLimit);
-        $c['services'] = $collections['service']->getPackage($itemLimit);
+        $parentCollections = $this->collectParentModels();
+        $c['server'] = $parentCollections['server']->getPackage($itemLimit);
+
+        $childCollections = $this->collectChildModels();
+        $c['sensors'] = $childCollections['sensor']->getPackage($itemLimit);
+        $c['resources'] = $childCollections['resource']->getPackage($itemLimit);
+        $c['services'] = $childCollections['service']->getPackage($itemLimit);
         return $c;
     }
 

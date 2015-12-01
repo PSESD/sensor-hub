@@ -22,7 +22,7 @@ class m150000_000000_initial_core extends \canis\db\Migration
             'system_id' => 'string NOT NULL',
             'data' => 'longblob DEFAULT NULL',
             'active' => 'bool NOT NULL DEFAULT 0',
-            'last_check' => 'datetime DEFAULT NULL',
+            'last_refresh' => 'datetime DEFAULT NULL',
             'created' => 'datetime DEFAULT NULL',
             'modified' => 'datetime DEFAULT NULL'
         ]);

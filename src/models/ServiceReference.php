@@ -22,6 +22,7 @@ use canis\registry\models\Registry;
  */
 class ServiceReference extends \canis\db\ActiveRecordRegistry
 {
+    use SensorObjectTrait;
     /**
      * @inheritdoc
      */
@@ -132,15 +133,22 @@ class ServiceReference extends \canis\db\ActiveRecordRegistry
         return $models;
     }
 
-    public function childModels()
+    public function childModels($careAboutActive = true)
     {
+        if ($careAboutActive) {
+            $active = 1;
+        } else {
+            $active = [0, 1];
+        }
         $models = [];
-        $models['Resource'] = Resource::find()->where(['object_id' => $this->id, 'active' => 1])->all();
-        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
-        $models['Service'] = Service::find()->where(['id' => $this->service_id, 'active' => 1])->all();
-        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Resource'] = Resource::find()->where(['object_id' => $this->id, 'active' => $active])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => $active])->all();
+        $models['Service'] = Service::find()->where(['id' => $this->service_id, 'active' => $active])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id, 'active' => $active])->all();
         if (($serviceProvider = Registry::getObject($this->object_id))) {
-            $models['ServiceProvider'] = [$serviceProvider];
+            if (!$careAboutActive || !empty($serviceProvider->active)) {
+                $models['ServiceProvider'] = [$serviceProvider];
+            }
         }
         return $models;
     }

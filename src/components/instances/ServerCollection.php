@@ -24,6 +24,8 @@ class ServerCollection extends Collection
 			$item = [];
 			$item['label'] = $model->getContextualDescriptor($this->model);
 			$item['url'] = Url::to(['/server/view', 'id' => $model->id]);
+			$item['background'] = true;
+			$item['state'] = 'default';
 			$items[] = $item;
 		}
 		return $items;

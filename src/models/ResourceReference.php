@@ -22,6 +22,7 @@ use canis\registry\models\Registry;
  */
 class ResourceReference extends \canis\db\ActiveRecordRegistry
 {
+    use SensorObjectTrait;
     /**
      * @inheritdoc
      */
@@ -123,12 +124,17 @@ class ResourceReference extends \canis\db\ActiveRecordRegistry
         return $models;
     }
 
-    public function childModels()
+    public function childModels($careAboutActive = true)
     {
+        if ($careAboutActive) {
+            $active = 1;
+        } else {
+            $active = [0, 1];
+        }
         $models = [];
-        $models['Resource'] = Resource::find()->where(['id' => $this->resource_id, 'active' => 1])->all();
+        $models['Resource'] = Resource::find()->where(['id' => $this->resource_id, 'active' => $active])->all();
         if (($resourceProvider = Registry::getObject($this->object_id))) {
-            if (!empty($resourceProvider->active)) {
+            if (!$careAboutActive || !empty($resourceProvider->active)) {
                 $models['ResourceProvider'] = [$resourceProvider];
             }
         }

@@ -13,7 +13,8 @@ use yii\web\NotFoundHttpException;
 use canis\sensorHub\models\Provider;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
-use canis\sensorHub\components\instances\ProviderInstance;
+use canis\sensorHub\components\instances\PushProviderInstance;
+use canis\sensorHub\components\instances\PullProviderInstance;
 
 class ProviderController extends \canis\sensorHub\controllers\Controller
 {
@@ -30,17 +31,17 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             $providers[] = [
                 'id' => $provider->id,
                 'name' => $providerName,
-                'url' => $provider->dataObject->attributes['url'],
+                'type' => $provider->dataObject->providerType,
                 'active' => $provider->active === 1 ? 'Yes' : 'No',
                 'created' => $provider->created,
-                'last_check' => $provider->last_check
+                'last_refresh' => $provider->last_refresh
             ];
         }
         $this->params['dataProvider'] = $dataProvider = new ArrayDataProvider([
             'allModels' => $providers,
             'key' => 'id',
             'sort' => [
-                'attributes' => ['id', 'name', 'active', 'url', 'created', 'last_check'],
+                'attributes' => ['id', 'name', 'active', 'type', 'created', 'last_refresh'],
             ],
             'pagination' => [
                 'pageSize' => 10,
@@ -71,8 +72,7 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             throw new NotFoundHttpException("Provider not found");
         }
         $this->params['scenario'] = $scenario = 'update';
-
-        $this->params['instance'] = $this->params['model']->initializeData = $this->params['model']->dataObject;
+        $this->params['instance'] = $this->params['model']->dataObject;
         if (!empty($_POST)) {
             $data = false;
             if (isset($_POST['Provider']['data'])) {
@@ -86,10 +86,18 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             if (!$valid) {
                 $this->params['model']->validate();
             }
+            // $this->params['model']->last_refresh = date("Y-m-d G:i:s");
             if ($valid && $this->params['model']->save()) {
-                Yii::$app->response->success = 'Sensor provider \'' . $model->dataObject->object->name .'\' updated!';
-                Yii::$app->response->refresh = true;
-                return;
+                if (!$model->initializeData(true)) {
+                    $model->delete();
+                    Yii::$app->response->error = 'Sensor provider could not be created!';
+                    Yii::$app->response->refresh = true;
+                    return;
+                } else {
+                    Yii::$app->response->success = 'Sensor provider \'' . $model->dataObject->object->name .'\' created!';
+                    Yii::$app->response->refresh = true;
+                    return;
+                }
             }
         }
         Yii::$app->response->view = 'create';
@@ -100,9 +108,16 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
 
     public function actionCreate()
     {
+        $providerMap = [];
+        $providerMap['pull'] = PullProviderInstance::class;
+        $providerMap['push'] = PushProviderInstance::class;
+        if (empty($_GET['type']) || !isset($providerMap[$_GET['type']])) {
+            throw new NotFoundHttpException("Provider type not found");
+        } 
+        $providerClass = $providerMap[$_GET['type']];
         $this->params['model'] = $model = new Provider;
         $this->params['scenario'] = $scenario = 'create';
-        $this->params['instance'] = $this->params['model']->dataObject = new ProviderInstance;
+        $this->params['instance'] = $this->params['model']->dataObject = new $providerClass;
         if (!empty($_POST)) {
             $data = false;
             if (isset($_POST['Provider']['data'])) {
@@ -116,7 +131,7 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             if (!$valid) {
                 $this->params['model']->validate();
             }
-            // $this->params['model']->last_check = date("Y-m-d G:i:s");
+            // $this->params['model']->last_refresh = date("Y-m-d G:i:s");
             if ($valid && $this->params['model']->save()) {
                 if (!$model->initializeData(true)) {
                     $model->delete();

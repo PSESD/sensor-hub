@@ -22,6 +22,7 @@ use canis\registry\models\Registry;
  */
 class Resource extends \canis\db\ActiveRecordRegistry
 {
+    use SensorObjectTrait;
     public $descriptorField = 'name';
     
     /**
@@ -95,10 +96,15 @@ class Resource extends \canis\db\ActiveRecordRegistry
         return $models;
     }
 
-    public function childModels()
+    public function childModels($active = true)
     {
+        if ($active) {
+            $active = 1;
+        } else {
+            $active = [0, 1];
+        }
         $models = [];
-        $models['ResourceReference'] = ResourceReference::find()->where(['resource_id' => $this->id, 'active' => 1])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['resource_id' => $this->id, 'active' => $active])->all();
         return $models;
     }
 

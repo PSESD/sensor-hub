@@ -22,6 +22,7 @@ use canis\registry\models\Registry;
  */
 class Site extends \canis\db\ActiveRecordRegistry
 {
+    use SensorObjectTrait;
     /**
      * @inheritdoc
      */
@@ -102,14 +103,19 @@ class Site extends \canis\db\ActiveRecordRegistry
         return $models;
     }
 
-    public function childModels()
+    public function childModels($active = true)
     {
+        if ($active) {
+            $active = 1;
+        } else {
+            $active = [0, 1];
+        }
         $models = [];
-        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => 1])->all();
-        $models['Service'] = Service::find()->where(['object_id' => $this->id, 'active' => 1])->all();
-        $models['ServiceReference'] = ServiceReference::find()->where(['object_id' => $this->id, 'active' => 1])->all();
-        $models['Resource'] = Resource::find()->where(['object_id' => $this->id, 'active' => 1])->all();
-        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id, 'active' => 1])->all();
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => $active])->all();
+        $models['Service'] = Service::find()->where(['object_id' => $this->id, 'active' => $active])->all();
+        $models['ServiceReference'] = ServiceReference::find()->where(['object_id' => $this->id, 'active' => $active])->all();
+        $models['Resource'] = Resource::find()->where(['object_id' => $this->id, 'active' => $active])->all();
+        $models['ResourceReference'] = ResourceReference::find()->where(['object_id' => $this->id, 'active' => $active])->all();
         return $models;
     }
 
@@ -121,5 +127,6 @@ class Site extends \canis\db\ActiveRecordRegistry
     {
         return $this->hasOne(Provider::className(), ['id' => 'provider_id']);
     }
+
 
 }

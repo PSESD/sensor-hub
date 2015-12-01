@@ -15,7 +15,14 @@ echo Html::beginTag('div', ['class' => 'panel panel-default']);
 echo Html::beginTag('div', ['class' => 'panel-heading']);
 echo Html::beginTag('h3', ['class' => 'panel-title']);
 echo Html::beginTag('div', ['class' => 'btn-group btn-group-sm  pull-right']);
-echo Html::a('<span class="fa fa-plus"></span> Add Provider', ['/admin/provider/create'], ['class' => 'btn btn-primary', 'data-handler' => 'background']);
+echo Html::a('Add Provider <span class="caret"></span>', '#', ['class' => 'btn btn-primary dropdown-toggle', 'data-toggle' => 'dropdown']);
+
+echo Html::beginTag('ul', ['class' => 'dropdown-menu']);
+echo Html::tag('li', Html::a('Pull Provider', ['/admin/provider/create', 'type' => 'pull'], ['class' => '', 'data-handler' => 'background']));
+echo Html::tag('li', Html::a('Pushing Provider', ['/admin/provider/create', 'type' => 'push'], ['class' => '', 'data-handler' => 'background']));
+//echo Html::a('Static Provider', ['/admin/provider/create', 'type' => 'static'], ['class' => '', 'data-handler' => 'background']);
+echo Html::endTag('ul');
+
 echo Html::endTag('div');
 echo 'Sensor Providers';
 echo Html::endTag('h3');
@@ -44,9 +51,9 @@ echo GridView::widget([
             ]
         ],
         'name',
-        'url',
+        'type',
         'active',
-        'last_check:datetime',
+        'last_refresh:datetime',
         'created:datetime'
     ],
 ]);
