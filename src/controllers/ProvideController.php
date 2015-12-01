@@ -13,6 +13,7 @@ use canis\sensorHub\models\Provider;
 use yii\web\NotFoundHttpException;
 use yii\web\NotAcceptableHttpException;
 use yii\web\UnauthorizedHttpException;
+use yii\web\UnprocessableEntityHttpException;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 
