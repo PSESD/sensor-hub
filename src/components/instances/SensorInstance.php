@@ -20,7 +20,6 @@ use canis\sensors\base\Sensor as BaseSensor;
 class SensorInstance extends Instance
 {
     const COLLECT_DEPTH = 1;
-	public $payload = false;
 
     public function getObjectType()
     {
