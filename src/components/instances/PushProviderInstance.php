@@ -22,38 +22,25 @@ class PushProviderInstance extends ProviderInstance
 		return 'Pushing';
 	}
 
-	public function listen($event)
+	public function take($data)
 	{
-		if (!isset($data['data']['provider']) || !isset($data['data']['provider']['class'])) {
-    		$event->addError('Sensor provider did not provide a valid response.');
-    		$event->state = BaseSensor::STATE_ERROR;
-    		return;
+		if (!isset($data['provider']) || !isset($data['provider']['class'])) {
+    		return false;
     	}
-
-		if (!class_exists($data['data']['provider']['class'])) {
-    		$event->addError('Sensor provider is not recognized by this sensor monitor instance.');
-			$event->notify = true;
-			$event->pause = '+1 day';
-    		$event->state = BaseSensor::STATE_ERROR;
-    		return;
+		if (!class_exists($data['provider']['class'])) {
+    		return false;
 		}
-
-		if (!$this->loadObject($data['data']['provider'], ProviderInterface::class)) {
-    		$event->addError('Sensor provider could not be validated.');
-			$event->notify = true;
-			$event->pause = '+1 day';
-    		$event->state = BaseSensor::STATE_ERROR;
-    		return;
+		if (!$this->loadObject($data['provider'], PushProviderInterface::class)) {
+    		return false;
 		}
         if (!$this->initialize(null, false)) {
-            $event->addError('Sensor provider could not be initialized.');
-            $event->notify = true;
-            $event->pause = '+1 day';
-            $event->state = BaseSensor::STATE_ERROR;
-            return;
+            return false;
         }
-        $this->model->last_refresh = date("Y-m-d G:i:s");
+        $this->model->last_refresh = gmdate("Y-m-d G:i:s");
         $this->model->save();
+
+        $this->internalUpdateRelations();
+        return true;
 	}
 
 

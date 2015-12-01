@@ -80,7 +80,7 @@ class PullProviderInstance extends ProviderInstance
             $event->state = BaseSensor::STATE_ERROR;
             return;
         }
-        $this->model->last_refresh = date("Y-m-d G:i:s");
+        $this->model->last_refresh = gmdate("Y-m-d G:i:s");
         $this->model->save();
     }
 

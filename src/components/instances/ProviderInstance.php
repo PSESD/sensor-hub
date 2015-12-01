@@ -80,7 +80,7 @@ abstract class ProviderInstance extends Instance
         return $result;
     }
 
-    protected function internalUpdateRelations($event)
+    protected function internalUpdateRelations()
     {
         $_this = $this;
         $modelsChecked = [];
