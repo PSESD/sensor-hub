@@ -80,10 +80,26 @@ class SensorInstance extends Instance
 		if ($event->pause) {
 			$timeString = $event->pause;
 		}
+        if ($this->hasDataPoint()) {
+            $this->recordSensorData($event);
+        }
     	if ($event->state !== $this->model->state) {
     		$this->triggerStateChange($event);
     	}
     	return $this->scheduleCheck();
+    }
+
+
+    protected function recordSensorData(CheckEvent $event)
+    {
+        if ($event->dataValue === null) {
+            return true;
+        }
+        $sensorData = new SensorData;
+        $sensorData->sensor_id = $this->model->primaryKey;
+        $sensorData->value = $event->dataValue;
+        $sensorData->save();
+        return true;
     }
 
     protected function triggerStateChange(CheckEvent $event)
@@ -91,6 +107,9 @@ class SensorInstance extends Instance
     	$sensorEvent = new SensorEvent;
     	$sensorEvent->sensor_id = $this->model->primaryKey;
     	$sensorEvent->old_state = $this->model->state;
+        if (empty($sensorEvent->old_state)) {
+            $sensorEvent->old_state = BaseSensor::STATE_UNCHECKED;
+        }
     	$sensorEvent->new_state = $event->state;
     	$sensorEvent->data = serialize($event);
     	$sensorEvent->save();
@@ -144,7 +163,7 @@ class SensorInstance extends Instance
         return $package;
     }
 
-    public function getDataPoint($formatted = true)
+    public function getDataPoint($formatted = false)
     {
         if ($this->hasDataPoint()) {
             if ($formatted) {
