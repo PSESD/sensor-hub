@@ -111,10 +111,14 @@ class SensorInstance extends Instance
     {
         $timeString = $this->object->getCheckInterval($this);
         $failbackTimeString = $this->object->getFailbackTime($this);
-        if ($failback) {
-            $this->model->next_check = date("Y-m-d G:i:s", max(strtotime($failbackTimeString), strtotime($timeString)));
+        if ($timeString === false) {
+            $this->model->next_check = null;
         } else {
-            $this->model->next_check = date("Y-m-d G:i:s", strtotime($timeString));
+            if ($failback) {
+                $this->model->next_check = date("Y-m-d G:i:s", max(strtotime($failbackTimeString), strtotime($timeString)));
+            } else {
+                $this->model->next_check = date("Y-m-d G:i:s", strtotime($timeString));
+            }
         }
         if ($save) {
             return $this->model->save();
@@ -140,8 +144,15 @@ class SensorInstance extends Instance
         return $package;
     }
 
-    public function getDataPoint()
+    public function getDataPoint($formatted = true)
     {
+        if ($this->hasDataPoint()) {
+            if ($formatted) {
+                return $this->object->getDataValueFormatted();
+            } else {
+                return $this->object->getDataValue();
+            }
+        }
         return false;
     }
 

@@ -56,7 +56,7 @@ class SensorCollection extends Collection
 				$hasWarning = true;
 			}
 			if ($model->dataObject->hasDataPoint()) {
-				$subitem['badge'] = $model->dataObject->getDataPoint();
+				$subitem['badge'] = ucfirst($model->state) . ' ('. $model->dataObject->getDataPoint(true) .')';
 			} else {
 				$subitem['badge'] = ucfirst($model->state);
 			}

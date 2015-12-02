@@ -13,7 +13,7 @@ use canis\sensors\providers\ProviderInterface;
 
 class ServerInstance extends Instance
 {
-    const COLLECT_DEPTH = 6;
+    const COLLECT_DEPTH = 5;
     
     public function getObjectType()
     {
@@ -25,7 +25,7 @@ class ServerInstance extends Instance
     {
         $collections = $this->collectChildModelsFromObjects();
         return array_merge(
-            $collections['sensor']->getAll(6), 
+            $collections['sensor']->getAll(2), 
             $collections['resource']->getAll(1), 
             $collections['site']->getAll(5),
             $collections['service']->getAll(1)

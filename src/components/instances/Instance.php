@@ -403,6 +403,11 @@ abstract class Instance
             $this->log->addError('Unable to save (final) object model', ['class' => get_class($object->model), 'attributes' => $object->model->attributes, 'errors' => $object->model->errors]);
             return false;
         }
+
+        if (!$object->onInstantiation($object->model->dataObject)) {
+            $this->log->addError('Unable to save (final) object model', ['class' => get_class($object->model), 'attributes' => $object->model->attributes, 'errors' => $object->model->errors]);
+            return false;
+        }
         return true;
     }
 
@@ -736,7 +741,7 @@ abstract class Instance
         try {
             $object = Yii::createObject($config);
         } catch (\Exception $e) {
-//            throw $e;
+            throw $e;
             $object = false;
         }
         if (!$object) {
