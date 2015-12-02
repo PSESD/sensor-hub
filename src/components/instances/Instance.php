@@ -292,7 +292,7 @@ abstract class Instance
             if ($model->isNewRecord) {
                 $timeString = 'now';
             }
-            return date("Y-m-d G:i:s", strtotime($timeString)); 
+            return gmdate("Y-m-d G:i:s", strtotime($timeString)); 
         };
         $possibleAttributes = [
             'system_id' => $object->id,

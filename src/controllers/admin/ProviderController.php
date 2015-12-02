@@ -86,7 +86,7 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             if (!$valid) {
                 $this->params['model']->validate();
             }
-            // $this->params['model']->last_refresh = date("Y-m-d G:i:s");
+            // $this->params['model']->last_refresh = gmdate("Y-m-d G:i:s");
             if ($valid && $this->params['model']->save()) {
                 if (!$model->initializeData(true)) {
                     $model->delete();
@@ -131,7 +131,7 @@ class ProviderController extends \canis\sensorHub\controllers\Controller
             if (!$valid) {
                 $this->params['model']->validate();
             }
-            // $this->params['model']->last_refresh = date("Y-m-d G:i:s");
+            // $this->params['model']->last_refresh = gmdate("Y-m-d G:i:s");
             if ($valid && $this->params['model']->save()) {
                 if (!$model->initializeData(true)) {
                     $model->delete();

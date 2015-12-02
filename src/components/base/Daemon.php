@@ -135,7 +135,7 @@ class Daemon extends DaemonBase
         $exitStatus = 0;
         $timer = $this->loop->addPeriodicTimer(rand(1, 10)/1000, function() use ($self, $headId, $limitPerTick, $tickCallback, &$exitStatus, &$ticks, &$timer) {
             $ticks++;
-            $sensorsToCheck = Sensor::find()->where(['and', ['active' => 1], '[[next_check]] <= "' . date("Y-m-d G:i:s") .'"'])->orderBy(['next_check' => SORT_ASC])->limit($limitPerTick)->all();
+            $sensorsToCheck = Sensor::find()->where(['and', ['active' => 1], '[[next_check]] <= "' . gmdate("Y-m-d G:i:s") .'"'])->orderBy(['next_check' => SORT_ASC])->limit($limitPerTick)->all();
             $skipCount = 0;
             $itemCount = count($sensorsToCheck);
             $sleepAfter = $itemCount === 0;
