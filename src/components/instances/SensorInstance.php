@@ -134,9 +134,9 @@ class SensorInstance extends Instance
             $this->model->next_check = null;
         } else {
             if ($failback) {
-                $this->model->next_check = date("Y-m-d G:i:s", max(strtotime($failbackTimeString), strtotime($timeString)));
+                $this->model->next_check = gmdate("Y-m-d G:i:s", max(strtotime($failbackTimeString), strtotime($timeString)));
             } else {
-                $this->model->next_check = date("Y-m-d G:i:s", strtotime($timeString));
+                $this->model->next_check = gmdate("Y-m-d G:i:s", strtotime($timeString));
             }
         }
         if ($save) {
