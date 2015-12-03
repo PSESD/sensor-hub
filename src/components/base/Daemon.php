@@ -109,7 +109,7 @@ class Daemon extends DaemonBase
     	if (static::isPaused()) {
     		return true;
     	}
-    	if ($ticks > 100) {
+    	if ($ticks > 30) {
     		return true;
     	}
         return false;

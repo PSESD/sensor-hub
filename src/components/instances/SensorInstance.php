@@ -134,9 +134,9 @@ class SensorInstance extends Instance
             $this->model->next_check = null;
         } else {
             if ($failback) {
-                $this->model->next_check = gmdate("Y-m-d G:i:s", max(strtotime($failbackTimeString), strtotime($timeString)));
+                $this->model->next_check = date("Y-m-d G:i:s", max(strtotime($failbackTimeString), strtotime($timeString)));
             } else {
-                $this->model->next_check = gmdate("Y-m-d G:i:s", strtotime($timeString));
+                $this->model->next_check = date("Y-m-d G:i:s", strtotime($timeString));
             }
         }
         if ($save) {
@@ -145,23 +145,6 @@ class SensorInstance extends Instance
         return true;
     }
 
-    public function getPackage($viewPackage = false)
-    {
-        $package = parent::getPackage($viewPackage);
-        if ($viewPackage) {
-            $package['view']['events'] = ['handler' => 'events', 'items' => []];
-            foreach (SensorEvent::find()->where(['sensor_id' => $this->model->id])->all() as $event) {
-                $package['events']['items'][$event->id] = $event->attributes;
-            }
-            if ($this->hasDataPoint()) {
-                $package['view']['data'] = ['handler' => 'data', 'items' => []];
-                foreach (SensorData::find()->where(['sensor_id' => $this->model->id])->all() as $data) {
-                    $package['data']['items'][$data->id] = $data->value;
-                }
-            }
-        }
-        return $package;
-    }
 
     public function getDataPoint($formatted = false)
     {
@@ -191,12 +174,51 @@ class SensorInstance extends Instance
         return $this->object instanceof SensorDataInterface;
     }
 
+    public function getSensorDataPackage()
+    {
+        $package = [];
+        $items = SensorData::find()->where(['sensor_id' => $this->model->id])->orderBy(['created' => SORT_ASC])->all();
+        foreach ($items as $item) {
+            $package[] = [
+                date("c", strtotime($item->created . ' UTC')),
+                (float)$item->value,
+                $this->object->formatDataPoint($item->value)
+            ];
+        }
+        return $package;
+    }
+
+    public function getSensorEventPackage()
+    {
+        $package = [];
+        $items = $this->model->getRecentSensorEventQuery(10)->all();
+        foreach ($items as $item) {
+            $packageItem = [
+                'datetime' => date("c", strtotime($item->created . ' UTC')),
+                'datetimeHuman' => date("F j, Y g:i:sa T", strtotime($item->created . ' UTC')),
+                'event' => $this->object->describeEventFormatted($this, $item)
+            ];
+            if ($item->new_state === BaseSensor::STATE_NORMAL) {
+                $packageItem['state'] = 'success';
+            } elseif ($item->new_state === BaseSensor::STATE_FAIL || $item->new_state === BaseSensor::STATE_UNCHECKED) {
+                $packageItem['state'] = 'warning';
+            } else {
+                $packageItem['state'] = 'danger';
+            }
+            $package[$item->id] = $packageItem;
+        }
+        return $package;
+    }
+
     public function getViewPackage($package)
     {
         $view = parent::getViewPackage($package);
-        $view['state'] = ['handler' => 'sensorState', 'state' => $this->model->state];
-        $view['data'] = ['handler' => 'sensorData', 'items' => []];
-        $view['events'] = ['handler' => 'sensorEvents', 'items' => []];
+        $view['state'] = ['handler' => 'sensorState', 'stateDescription' => $this->object->describe($this), 'state' => $this->model->simpleState, 'lastUpdate' => date("c", strtotime($this->model->last_check . ' UTC'))];
+        $view['events'] = ['handler' => 'sensorEvents', 'items' => $this->getSensorEventPackage()];
+
+        if ($this->hasDataPoint()) {
+            $view['data'] = ['handler' => 'sensorData', 'columns' => 12, 'items' => $this->getSensorDataPackage()];
+        }
         return $view;
     }
 }

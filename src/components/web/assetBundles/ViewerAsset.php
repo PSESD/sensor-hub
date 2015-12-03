@@ -20,6 +20,8 @@ class ViewerAsset extends AssetBundle
         'js/canis.viewer.js',
     ];
     public $depends = [
-        'canis\sensorHub\components\web\assetBundles\AppAsset'
+        'canis\sensorHub\components\web\assetBundles\AppAsset',
+        'canis\web\assetBundles\HighchartsAsset',
+        'canis\web\assetBundles\TimeAgoAsset'
     ];
 }

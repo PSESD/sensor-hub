@@ -42,6 +42,8 @@
         
         "bower-asset/canis-log-viewer": "0.1.*",
         "bower-asset/canis-expandable": "0.1.*",
+        "bower-asset/highcharts": "4.1.*",
+        "bower-asset/smart-time-ago": "0.1.*",
 
         "yiisoft/yii2-bootstrap": "2.0.*",
         "yiisoft/yii2-redis": "2.0.*",

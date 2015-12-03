@@ -1,3 +1,9 @@
+Highcharts.setOptions({
+  global: {
+    useUTC: false
+  }
+});
+
 function CanisSensorObjectViewer($element, settings) {
     CanisComponent.call(this);
     var _this = this;
@@ -208,14 +214,14 @@ function CanisObjectColumn(sensorObject, viewComponent, $row) {
 	this.viewComponent = viewComponent;
 	this.$parentRow = $row;
 	this.elements = {};
-	this.init();
+	this.init(viewComponent);
 	this.refresh(viewComponent);
 }
 CanisObjectColumn.prototype = Object.create(CanisComponent.prototype);
 CanisObjectColumn.prototype.objectClass = 'CanisObjectColumn';
 CanisObjectColumn.prototype.constructor = CanisObjectColumn;
 
-CanisObjectColumn.prototype.init = function() {
+CanisObjectColumn.prototype.init = function(viewComponent) {
 	this.elements.$column = $("<div />", {'class': ''}).appendTo(this.$parentRow);
 	this.elements.panel = this.generatePanel(this.elements.$column, this.getPanelHeading());
 	this.elements.$canvas = this.elements.panel.$body;
@@ -433,6 +439,7 @@ CanisObjectColumn_List.prototype.refresh = function(viewComponent) {
 			_this.items[itemId].elements.$subheader = $("<div />", {'class': 'list-group-item-text'}).appendTo(_this.items[itemId].elements.$item);
 			_this.items[itemId].elements.$item.data('manager', _this.sensorObject.manager).click(_this.sensorObject.manager.switchObject)
 		}
+		_this.items[itemId].elements.$item.appendTo(_this.elements.$list);
 		_this.items[itemId].elements.$title.html(item.label);
 		var roles = [];
 		_this.items[itemId].elements.$subheader.html(roles.join(', '));
@@ -462,19 +469,187 @@ CanisObjectColumn_List.prototype.getPanelHeading = function() {
 };
 
 
+function CanisObjectColumn_SensorState(sensorObject, viewComponent, $row) {
+    CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
+}
+CanisObjectColumn_SensorState.prototype = Object.create(CanisObjectColumn.prototype);
+CanisObjectColumn_SensorState.prototype.objectClass = 'CanisObjectColumn_SensorState';
+CanisObjectColumn_SensorState.prototype.constructor = CanisObjectColumn_SensorState;
+
+CanisObjectColumn_SensorState.prototype.getPanelHeading = function() {
+	var heading = {};
+	heading.label = 'Sensor';
+	return heading;
+};
+CanisObjectColumn_SensorState.prototype.init = function(viewComponent) {
+	CanisObjectColumn.prototype.init.call(this, viewComponent);
+    this.elements.$statusList = $("<div />", {'class': 'list-group'}).appendTo(this.elements.$canvas);
+    this.elements.$statusItem = $("<div />", {'class': 'list-group-item'}).appendTo(this.elements.$statusList);
+    this.elements.$statusItemTitle = $("<h3 />", {'class': 'list-group-item-heading'}).appendTo(this.elements.$statusItem);
+
+    this.elements.$dateItem = $("<div />", {'class': 'list-group-item'}).html("Last checked ").appendTo(this.elements.$statusList);
+    this.elements.$dateItemText = $("<time />", {'class': 'timeago', 'datetime': ''}).appendTo(this.elements.$dateItem);
+};
+CanisObjectColumn_SensorState.prototype.refresh = function(viewComponent) {
+	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+	var _this = this;
+	this.elements.$statusItemTitle.html(this.viewComponent.stateDescription);
+	this.elements.$statusItem.removeClass('list-group-item-success list-group-item-info list-group-item-danger list-group-item-warning');
+	this.elements.$statusItem.addClass('list-group-item-' + this.viewComponent.state);
+	this.elements.$dateItemText.attr({'datetime': this.viewComponent.lastUpdate}).timeago();
+};
+
+
+
+
 function CanisObjectColumn_SensorData(sensorObject, viewComponent, $row) {
+	this.chart = false;
     CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
 CanisObjectColumn_SensorData.prototype = Object.create(CanisObjectColumn.prototype);
 CanisObjectColumn_SensorData.prototype.objectClass = 'CanisObjectColumn_SensorData';
 CanisObjectColumn_SensorData.prototype.constructor = CanisObjectColumn_SensorData;
 
+CanisObjectColumn_SensorData.prototype.getPanelHeading = function() {
+	var heading = {};
+	heading.label = 'Data';
+	return heading;
+};
+
+CanisObjectColumn_SensorData.prototype.init = function(viewComponent) {
+	CanisObjectColumn.prototype.init.call(this, viewComponent);
+    this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No sensor data has been recorded').appendTo(this.elements.$canvas);
+    this.elements.$chart = $("<div />", {'class': ''}).appendTo(this.elements.$canvas);
+};
+
+CanisObjectColumn_SensorData.prototype.parseData = function(dataItems) {
+	var data = [];
+	jQuery.each(dataItems, function(i, item) {
+		data.push({'x': new Date(item[0]), 'y': item[1], 'name': item[2]});
+	});
+	return data;
+};
+
+CanisObjectColumn_SensorData.prototype.initChart = function($chart, data) {
+	var options = {};
+	options.chart = {'zoomType': 'x'};
+	options.title = {'text': false};
+	options.xAxis = {'type': 'datetime'};
+	options.xAxis.dateTimeLabelFormats = {
+		millisecond: '%H:%M:%S.%L',
+		second: '%l:%M%:%S%p',
+		minute: '%l:%M%p',
+		hour: '%l:%M%p',
+		day: '%b %e',
+		week: '%b %e',
+		month: '%b \'%y',
+		year: '%Y'
+	};
+	options.yAxis = {'title': {'text': 'Value'}};
+	options.legend = {'enabled': false};
+	options.plotOptions = {'area': {}};
+	options.plotOptions.area.marker = {'radius': 2};
+	options.plotOptions.area.lineWidth = 1;
+	options.plotOptions.area.states = {};
+	options.plotOptions.area.states.hover = {'lineWidth': 1};
+	options.plotOptions.area.threshold = null;
+	options.credits = {'enabled': false};
+	options.tooltip = {};
+	options.tooltip.formatter = function() {
+		var desc = '<strong>' + this.point.x.toLocaleString() + '</strong>: ' + this.point.name;
+		return desc;
+	};
+
+	var series = {'type': 'area', 'name': 'Data', 'data': data};
+	options.series = [series];
+	$chart.addClass('chart').highcharts(options);
+	this.chart = $chart.highcharts();
+	return data;
+};
+
+CanisObjectColumn_SensorData.prototype.updateChart = function($chart, data) {
+	console.log(['update', data]);
+	this.chart.series[0].update({
+	    data: data
+	}, true);
+};
+
+CanisObjectColumn_SensorData.prototype.refresh = function(viewComponent) {
+	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+	var _this = this;
+	var data = this.parseData(this.viewComponent.items);
+	var hasItems = data.length > 0;
+	if (!this.elements.$chart.hasClass('chart')) {
+		// set up chart
+		this.initChart(this.elements.$chart, data);
+	} else {
+		// update data
+		this.updateChart(this.elements.$chart, data);
+	}
+	if (hasItems) {
+		this.elements.$chart.show();
+		this.elements.$emptyNotice.hide();
+	} else {
+		this.elements.$chart.hide();
+		this.elements.$emptyNotice.show();
+	}
+};
+
+
 function CanisObjectColumn_SensorEvents(sensorObject, viewComponent, $row) {
+	this.items = {};
     CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
 CanisObjectColumn_SensorEvents.prototype = Object.create(CanisObjectColumn.prototype);
 CanisObjectColumn_SensorEvents.prototype.objectClass = 'CanisObjectColumn_SensorEvents';
 CanisObjectColumn_SensorEvents.prototype.constructor = CanisObjectColumn_SensorEvents;
+CanisObjectColumn_SensorEvents.prototype.getPanelHeading = function() {
+	var heading = {};
+	heading.label = 'Events';
+	return heading;
+};
+
+CanisObjectColumn_SensorEvents.prototype.init = function(viewComponent) {
+	CanisObjectColumn.prototype.init.call(this, viewComponent);
+    this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No sensor events have been recorded').appendTo(this.elements.$canvas);
+    this.elements.$list = $("<div />", {'class': 'list-group', 'style': 'overflow-y: auto; max-height: 300px'}).appendTo(this.elements.$canvas);
+};
+CanisObjectColumn_SensorEvents.prototype.refresh = function(viewComponent) {
+	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+	var _this = this;
+	var hasItems = false;
+	jQuery.each(this.viewComponent.items, function(itemId, item) {
+		hasItems = true;
+		if (_this.items[itemId] === undefined) {
+			_this.items[itemId] = {'item': item, 'elements': {}};
+			_this.items[itemId].elements.$item = $("<div />", {'class': 'list-group-item'}).appendTo(_this.elements.$list);
+			_this.items[itemId].elements.$heading = $("<div />", {'class': 'list-group-item-heading'}).appendTo(_this.items[itemId].elements.$item);
+			_this.items[itemId].elements.$title = $("<span />", {}).appendTo(_this.items[itemId].elements.$heading);
+			_this.items[itemId].elements.$timestamp = $("<time />", {'class': 'timeago list-group-item-text', 'datetime': item.datetime, 'title': item.datetimeHuman}).appendTo(_this.items[itemId].elements.$item);
+		}
+		_this.items[itemId].elements.$item.appendTo(_this.elements.$list);
+		_this.items[itemId].elements.$title.html(item.event);
+		
+		_this.items[itemId].elements.$item.removeClass('list-group-item-success list-group-item-info list-group-item-danger list-group-item-warning');
+		if (item.state !== undefined) {
+			_this.items[itemId].elements.$item.addClass('list-group-item-' + item.state);
+		}
+		if (item.badge !== undefined) {
+			if (_this.items[itemId].elements.$badge === undefined) {
+				_this.items[itemId].elements.$badge = $("<span />", {'class': 'badge'}).appendTo(_this.items[itemId].elements.$heading);
+			}
+			_this.items[itemId].elements.$badge.show().html(item.badge);
+		} else if (_this.items[itemId].elements.$badge !== undefined) {
+			_this.items[itemId].elements.$badge.hide();
+		}
+	});
+	$('.timeago').timeago('refresh');
+	if (hasItems) {
+		this.elements.$emptyNotice.hide();
+	} else {
+		this.elements.$emptyNotice.show();
+	}
+};
 
 $preparer.add(function(context) {
 	$('[data-object-viewer]', context).each(function() {
