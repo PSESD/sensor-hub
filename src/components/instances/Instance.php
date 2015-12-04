@@ -178,7 +178,7 @@ abstract class Instance
                 if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \canis\sensors\base\BaseInterface)) {
                     continue;
                 }
-                $event->pass($model);
+                $event->pass($model, ['parentType' => $this->objectType]);
                 $recurse[] = $model;
             }
         }
@@ -394,7 +394,7 @@ abstract class Instance
                 }
             }
             foreach ($currentModels as $model) {
-                $this->log->addInfo("Deactivating old model {$model->descriptor} ($model->id)");
+                $this->log->addInfo("Deactivating old model {$model->descriptor} ($model->id) for {$object->model->descriptor} ({$object->model->id})");
                 $model->deactivate();
             }
         }
@@ -515,6 +515,7 @@ abstract class Instance
         $package = [];
         $package['id'] = $this->model->id;
         $package['type'] = $this->getObjectType();
+        $package['objectTypeDescriptor'] = $this->object->getObjectTypeDescriptor();
         $package['url'] = Url::to([$this->getObjectType() . '/view', 'id' => $this->model->id]);
         $package['descriptor'] = $this->model->descriptor;
         $package['subdescriptor'] = $this->model->subdescriptor;

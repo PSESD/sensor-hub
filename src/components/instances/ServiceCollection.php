@@ -14,7 +14,7 @@ use yii\helpers\Url;
 
 class ServiceCollection extends Collection
 {
-	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
+	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($itemLimit === null) {
 			$itemLimit = 4;
@@ -23,14 +23,14 @@ class ServiceCollection extends Collection
 		return $items;
 	}
 
-	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
+	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($itemLimit === null) {
 			$itemLimit = 3;
 		}
 		$items = [];
 		$item = [];
-		$all = $this->getAll($maxDepth, $objectType);
+		$all = $this->getAll($maxDepth, $objectType, $parentObjectTypes);
 		$item['label'] = 'Services';
 		$item['url'] = Url::to(['children', 'type' => 'service', 'object' => $this->model->id]);
 		$item['background'] = true;
@@ -41,7 +41,7 @@ class ServiceCollection extends Collection
 		$hasDanger = false;
 		$hasWarning = false;
 		$itemCount = 1;
-		$allServices = $this->getAll($maxDepth, 'service');
+		$allServices = $this->getAll($maxDepth, 'service', $parentObjectTypes);
 		foreach ($allServices as $model) {
 			if ($itemLimit && $itemCount > $itemLimit && count($allServices) !== $itemLimit) {
 				$item['subitems']['services']['truncated'] = true;
@@ -61,7 +61,7 @@ class ServiceCollection extends Collection
 		}
 
 		$itemCount = 1;
-		$allReferencesRaw = $this->getAll($maxDepth, 'serviceReference');
+		$allReferencesRaw = $this->getAll($maxDepth, 'serviceReference', $parentObjectTypes);
 		$allReferences = [];
 		foreach ($allReferencesRaw as $model) {
 			$allReferences[$model->service_id] = $model;

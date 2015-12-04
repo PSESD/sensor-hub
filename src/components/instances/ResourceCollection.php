@@ -14,7 +14,7 @@ use yii\helpers\Url;
 
 class ResourceCollection extends Collection
 {
-	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
+	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($itemLimit === null) {
 			$itemLimit = 4;
@@ -23,14 +23,14 @@ class ResourceCollection extends Collection
 		return $items;
 	}
 
-	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
+	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($itemLimit === null) {
 			$itemLimit = 4;
 		}
 		$items = [];
 		$item = [];
-		$all = $this->getAll($maxDepth, $objectType);
+		$all = $this->getAll($maxDepth, $objectType, $parentObjectTypes);
 		$item['label'] = 'Resources';
 		$item['url'] = Url::to(['children', 'type' => 'resource', 'object' => $this->model->id]);
 		$item['background'] = true;
@@ -42,7 +42,7 @@ class ResourceCollection extends Collection
 		$hasDanger = false;
 		$hasWarning = false;
 		$itemCount = 1;
-		$allResources = $this->getAll($maxDepth, 'resource');
+		$allResources = $this->getAll($maxDepth, 'resource', $parentObjectTypes);
 		foreach ($allResources as $model) {
 			if ($itemLimit && $itemCount > $itemLimit && count($allResources) !== $itemLimit) {
 				$item['subitems']['resources']['truncated'] = true;
@@ -62,7 +62,7 @@ class ResourceCollection extends Collection
 		}
 
 		$itemCount = 1;
-		$allReferencesRaw = $this->getAll($maxDepth, 'resourceReference');
+		$allReferencesRaw = $this->getAll($maxDepth, 'resourceReference', $parentObjectTypes);
 		$allReferences = [];
 		foreach ($allReferencesRaw as $model) {
 			$allReferences[$model->resource->id] = $model;

@@ -53,7 +53,7 @@ abstract class Collection extends \yii\base\Object
 		return $this->_model;
 	}
 
-	public function getAll($maxDepth = false, $objectType = false)
+	public function getAll($maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($objectType !== false && !is_array($objectType)) {
 			$objectType = [$objectType];
@@ -74,6 +74,9 @@ abstract class Collection extends \yii\base\Object
 			if ($objectType !== false && !in_array($item[1], $objectType)) {
 				continue;
 			}
+			if ($parentObjectTypes && (!isset($item[3]['parentType']) || !in_array($item[3]['parentType'], $parentObjectTypes))) {
+				continue;
+			}
 			if (empty($item[2])) {
 				$item[2] = $this->_objects[$key][2] = Registry::getObject($key);
 			}
@@ -88,15 +91,16 @@ abstract class Collection extends \yii\base\Object
 		$this->_objects[$model->id] = [$depth, $objectType, $model, $data];
 	}
 
-	abstract public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false);
-	abstract public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false);
-	public function getPackage($itemLimit = null, $maxDepth = false, $objectType = false)
+	abstract public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectType = false);
+	abstract public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectType = false);
+
+	public function getPackage($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectType = false)
 	{
 		$package = [];
 		if ($this->type === 'parents') {
-			$package['items'] = $this->getParentPackageItems($itemLimit, $maxDepth, $objectType);
+			$package['items'] = $this->getParentPackageItems($itemLimit, $maxDepth, $objectType, $parentObjectType);
 		} else {
-			$package['items'] = $this->getChildPackageItems($itemLimit, $maxDepth, $objectType);
+			$package['items'] = $this->getChildPackageItems($itemLimit, $maxDepth, $objectType, $parentObjectType);
 		}
 		return $package;
 	}

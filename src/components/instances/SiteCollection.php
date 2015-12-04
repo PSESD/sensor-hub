@@ -13,7 +13,7 @@ use yii\helpers\Url;
 
 class SiteCollection extends Collection
 {
-	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
+	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($itemLimit === null) {
 			$itemLimit = 4;
@@ -22,7 +22,7 @@ class SiteCollection extends Collection
 		$siteCount = 0;
 		$truncated = false;
 		$itemCount = 1;
-		$sites = $this->getAll($maxDepth, $objectType);
+		$sites = $this->getAll($maxDepth, $objectType, $parentObjectTypes);
 		foreach ($sites as $model) {
 			if ($itemLimit && $itemCount > $itemLimit && count($sites) !== $itemLimit) {
 				$truncated = true;
@@ -38,14 +38,14 @@ class SiteCollection extends Collection
 		// return $items;
 	}
 
-	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
+	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($itemLimit === null) {
 			$itemLimit = 4;
 		}
 		$items = [];
 		$item = [];
-		$all = $this->getAll($maxDepth, $objectType);
+		$all = $this->getAll($maxDepth, $objectType, $parentObjectTypes);
 		$item['label'] = 'Sites';
 		$item['badge'] = count($all);
 		$item['url'] = Url::to(['children', 'type' => 'site', 'object' => $this->model->id]);

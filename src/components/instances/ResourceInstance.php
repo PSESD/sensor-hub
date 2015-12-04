@@ -22,15 +22,20 @@ class ResourceInstance extends Instance
 
     public function childModelsFromObjects()
     {
-        return [];
+        $collections = $this->collectChildModelsFromObjects();
+        return array_merge(
+            $collections['sensor']->getAll(1)
+        );
     }
 
     public function getComponentPackage($itemLimit = null)
     {
         $c = [];
-        $collections = $this->collectParentModels();
-        $c['servers'] = $collections['server']->getPackage($itemLimit);
-        $c['sites'] = $collections['site']->getPackage($itemLimit);
+        $childCollections = $this->collectChildModels();
+        $parentCollections = $this->collectParentModels();
+        $c['servers'] = $parentCollections['server']->getPackage($itemLimit);
+        $c['sensors'] = $childCollections['sensor']->getPackage($itemLimit);
+        $c['sites'] = $parentCollections['site']->getPackage($itemLimit);
         return $c;
     }
 

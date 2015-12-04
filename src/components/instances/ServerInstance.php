@@ -27,7 +27,7 @@ class ServerInstance extends Instance
         return array_merge(
             $collections['sensor']->getAll(2), 
             $collections['resource']->getAll(1), 
-            $collections['site']->getAll(5),
+            $collections['site']->getAll(3, false, ['service', 'serviceReference']),
             $collections['service']->getAll(1)
         );
     }

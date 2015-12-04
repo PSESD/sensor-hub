@@ -133,8 +133,9 @@ CanisItem.prototype.init = function() {
 	// this.elements.actions.$menu = $("<ul />", {'class': 'dropdown-menu'}).appendTo(this.elements.actions.$buttonGroup);
 	this.elements.$webActions = $("<div />", {'class': 'btn-group btn-group-sm pull-right'}).appendTo(this.elements.$canvas);
 	
+	this.elements.$components = $("<div />", {'class': 'btn-group btn-group pull-right canis-components'}).appendTo(this.elements.$canvas);
 	this.elements.$titleContainer = $("<h4 />", {'class': 'list-group-item-heading'}).appendTo(this.elements.$canvas);
-	this.elements.$components = $("<div />", {'class': 'btn-group btn-group pull-right canis-components'}).appendTo(this.elements.$titleContainer);
+	this.elements.$type = $("<div />", {'class': 'list-group-item-text text-muted'}).appendTo(this.elements.$canvas);
 	this.elements.$title = $("<a />", {'class': '', 'href': '#', 'data-handler': 'background'}).appendTo(this.elements.$titleContainer);
 	this.elements.$titleBuffer = $("<span />", {'class': ''}).html(' ').appendTo(this.elements.$titleContainer);
 	this.elements.$infoIcon = $("<span />", {'class': 'text-primary fa fa-info-circle'}).appendTo(this.elements.$titleContainer).hide();
@@ -273,7 +274,7 @@ CanisItem.prototype.updateComponents = function() {
 
 			if (item.badge !== undefined) {
 				if (_this.elements.$components.elements[key].$badge === undefined) {
-					_this.elements.$components.elements[key].$badge = $('<span />', {'class': 'badge'}).appendTo(_this.elements.$components.elements[key].$a);
+					_this.elements.$components.elements[key].$badge = $('<span />', {'class': 'badge', 'style': 'margin-left: 5px'}).appendTo(_this.elements.$components.elements[key].$a);
 				}
 				_this.elements.$components.elements[key].$badge.show().html(item.badge);
 			} else if (_this.elements.$components.elements[key].$badge !== undefined) {
@@ -389,6 +390,7 @@ CanisItem.prototype.updateUptime = function() {
 CanisItem.prototype.update = function(item) {
 	this.item = item;
 	this.elements.$title.html(item.descriptor).attr({'href': item.url});
+	this.elements.$type.html(item.objectTypeDescriptor);
 	this.updateInfo();
 	// this.updateWebActions();
 	// this.updateItemActions();

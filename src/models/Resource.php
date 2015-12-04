@@ -104,6 +104,7 @@ class Resource extends \canis\db\ActiveRecordRegistry
             $active = [0, 1];
         }
         $models = [];
+        $models['Sensor'] = Sensor::find()->where(['object_id' => $this->id, 'active' => $active])->all();
         $models['ResourceReference'] = ResourceReference::find()->where(['resource_id' => $this->id, 'active' => $active])->all();
         return $models;
     }

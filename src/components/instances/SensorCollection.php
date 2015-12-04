@@ -14,7 +14,7 @@ use yii\helpers\Url;
 
 class SensorCollection extends Collection
 {
-	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
+	public function getParentPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($itemLimit === null) {
 			$itemLimit = 4;
@@ -23,14 +23,14 @@ class SensorCollection extends Collection
 		return $items;
 	}
 
-	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false)
+	public function getChildPackageItems($itemLimit = null, $maxDepth = false, $objectType = false, $parentObjectTypes = false)
 	{
 		if ($itemLimit === null) {
 			$itemLimit = 4;
 		}
 		$items = [];
 		$item = [];
-		$all = $this->getAll($maxDepth, $objectType);
+		$all = $this->getAll($maxDepth, $objectType, $parentObjectTypes);
 		$item['label'] = 'Sensors';
 		$item['badge'] = count($all);
 		$item['url'] = Url::to(['children', 'type' => 'sensor', 'object' => $this->model->id]);

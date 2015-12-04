@@ -74,13 +74,13 @@ abstract class ProviderInstance extends Instance
     {   
         $this->log = $log;
         $id = md5(microtime(true));
-        $this->log->addInfo("Starting initializing provider ({$id})");
+        $this->log->addInfo("Starting initializing provider ({$id}; {$this->model->system_id})");
         $result = $this->internalInitialize($this->object, null, $initialInitialize);
-        $this->log->addInfo("Finished initializing provider ({$id})");
+        $this->log->addInfo("Finished initializing provider ({$id}; {$this->model->system_id})");
         return $result;
     }
 
-    protected function internalUpdateRelations()
+    public function internalUpdateRelations()
     {
         $_this = $this;
         $modelsChecked = [];
@@ -92,6 +92,7 @@ abstract class ProviderInstance extends Instance
             $currentChildRelations = ArrayHelper::index($currentChildRelations, function ($relation) {
                 return $relation->child_object_id;
             });
+
             $childModels = $model->dataObject->childModelsFromObjects();
             $baseRelation = ['parent_object_id' => $model->id, 'active' => 1];
             $childRelations = [];
