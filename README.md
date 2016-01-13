@@ -1,4 +1,1 @@
-# Docker App Farm
-
-Mostly just for managing WordPress instances
-
+# Site and Server Monitoring
