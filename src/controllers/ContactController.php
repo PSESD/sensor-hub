@@ -1,20 +1,20 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\controllers;
+namespace psesd\sensorHub\controllers;
 
 use Yii;
 use yii\web\NotFoundHttpException;
-use canis\sensorHub\models\Contact;
+use psesd\sensorHub\models\Contact;
 use canis\registry\models\Registry;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
-use canis\sensorHub\components\instances\ProviderInstance;
+use psesd\sensorHub\components\instances\ProviderInstance;
 
 class ContactController extends Controller
 {

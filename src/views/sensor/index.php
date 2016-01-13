@@ -2,7 +2,7 @@
 /**
  * @var yii\base\View
  */
-canis\sensorHub\components\web\assetBundles\MonitorAsset::register($this);
+psesd\sensorHub\components\web\assetBundles\MonitorAsset::register($this);
 
 ArrayHelper::multisort($tasks, 'title');
 $this->title = $config['title'];

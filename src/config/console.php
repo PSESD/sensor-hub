@@ -2,7 +2,7 @@
 defined('IS_CONSOLE') || define('IS_CONSOLE', true);
 $config = include __DIR__ . DIRECTORY_SEPARATOR .  'base.php';
 
-$config['controllerNamespace'] = 'canis\sensorHub\console\controllers';
+$config['controllerNamespace'] = 'psesd\sensorHub\console\controllers';
 $config['controllerMap'] = [
     'migrate' => 'canis\console\controllers\MigrateController',
 ];

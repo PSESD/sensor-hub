@@ -6,13 +6,13 @@
  * @license http://psesd.org/license/
  */
 
-namespace canis\sensorHub\setup\tasks;
+namespace psesd\sensorHub\setup\tasks;
 
-use canis\sensorHub\models\User;
+use psesd\sensorHub\models\User;
 
 /**
  *
- * @author Jacob Morrison <email@ofjacob.com>
+ * @author Jacob Morrison <jmorrison@psesd.org>
  */
 class Acl extends AclTask
 {

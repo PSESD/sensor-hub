@@ -1,22 +1,22 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\controllers;
+namespace psesd\sensorHub\controllers;
 
 use Yii;
 use yii\helpers\Url;
 use canis\language\Noun;
-use canis\sensorHub\models\Instance;
-use canis\sensorHub\models\Site;
-use canis\sensorHub\models\Server;
-use canis\sensorHub\models\Resource;
+use psesd\sensorHub\models\Instance;
+use psesd\sensorHub\models\Site;
+use psesd\sensorHub\models\Server;
+use psesd\sensorHub\models\Resource;
 use canis\registry\models\Registry;
-use canis\sensorHub\models\Sensor;
+use psesd\sensorHub\models\Sensor;
 use yii\helpers\ArrayHelper;
 
 abstract class BaseBrowseController extends Controller
@@ -74,7 +74,7 @@ abstract class BaseBrowseController extends Controller
     public function actionIndex()
     {
     	$this->params['config'] = $this->config();
-   		Yii::$app->response->view = '@canis/sensorHub/views/base/index';
+   		Yii::$app->response->view = '@psesd/sensorHub/views/base/index';
     }
 
     public function actionPackage()
@@ -126,7 +126,7 @@ abstract class BaseBrowseController extends Controller
             Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor, 'modalClass' => 'modal-xl', 'isForm' => false];
             Yii::$app->response->task = 'dialog';
         }
-        Yii::$app->response->view = '@canis/sensorHub/views/base/view';
+        Yii::$app->response->view = '@psesd/sensorHub/views/base/view';
     }
 
     public function actionChildren()
@@ -151,7 +151,7 @@ abstract class BaseBrowseController extends Controller
     	Yii::$app->response->params['objectType'] = $_GET['type'];
     	Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor .'\'s '.ucfirst($_GET['type']).'s', 'modalClass' => 'modal-sm', 'isForm' => false];
         Yii::$app->response->task = 'dialog';
-   		Yii::$app->response->view = '@canis/sensorHub/views/base/browse';
+   		Yii::$app->response->view = '@psesd/sensorHub/views/base/browse';
     }
 
 
@@ -175,7 +175,7 @@ abstract class BaseBrowseController extends Controller
         }
     	Yii::$app->response->taskOptions = ['title' => $objectModel->descriptor .'\'s '.ucfirst($_GET['type']).'s', 'modalClass' => 'modal-sm', 'isForm' => false];
         Yii::$app->response->task = 'dialog';
-   		Yii::$app->response->view = '@canis/sensorHub/views/base/browse';
+   		Yii::$app->response->view = '@psesd/sensorHub/views/base/browse';
     }
 
     protected function getObjects($objects, $objectType, $parentModel)

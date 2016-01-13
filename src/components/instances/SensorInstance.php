@@ -1,21 +1,21 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
-namespace canis\sensorHub\components\instances;
+namespace psesd\sensorHub\components\instances;
 
 use Yii;
 use canis\broadcaster\eventTypes\EventType;
-use canis\sensors\providers\ProviderInterface;
-use canis\sensors\base\SensorDataInterface;
-use canis\sensors\base\CheckEvent;
-use canis\sensorHub\models\SensorEvent;
-use canis\sensorHub\models\SensorData;
+use psesd\sensors\providers\ProviderInterface;
+use psesd\sensors\base\SensorDataInterface;
+use psesd\sensors\base\CheckEvent;
+use psesd\sensorHub\models\SensorEvent;
+use psesd\sensorHub\models\SensorData;
 use canis\registry\models\Registry;
-use canis\sensors\base\Sensor as BaseSensor;
+use psesd\sensors\base\Sensor as BaseSensor;
 
 class SensorInstance extends Instance
 {

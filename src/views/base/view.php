@@ -2,7 +2,7 @@
 use yii\helpers\Html;
 use yii\helpers\Url;
 
-canis\sensorHub\components\web\assetBundles\ViewerAsset::register($this);
+psesd\sensorHub\components\web\assetBundles\ViewerAsset::register($this);
 
 //$this->params['breadcrumbs'][] = ['label' => 'V'];
 $config = [];

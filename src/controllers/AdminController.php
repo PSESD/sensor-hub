@@ -1,18 +1,18 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\controllers;
+namespace psesd\sensorHub\controllers;
 
 use Yii;
 use yii\web\NotFoundHttpException;
 use yii\helpers\Url;
 use canis\daemon\Daemon;
-use canis\sensorHub\components\base\Engine;
+use psesd\sensorHub\components\base\Engine;
 
 class AdminController extends Controller
 {

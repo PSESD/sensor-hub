@@ -1,5 +1,5 @@
 <?php
-namespace canis\sensorHub\components\deferredActions;
+namespace psesd\sensorHub\components\deferredActions;
 
 use Yii;
 

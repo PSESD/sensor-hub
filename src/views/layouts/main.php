@@ -6,7 +6,7 @@ use yii\widgets\Breadcrumbs;
 use canis\deferred\widgets\NavItem as DeferredNavItem;
 use canis\daemon\widgets\SmallStatus as DaemonStatus;
 
-$this->beginContent('@canis/sensorHub/views/layouts/frame.php');
+$this->beginContent('@psesd/sensorHub/views/layouts/frame.php');
 NavBar::begin([
     'brandLabel' => Yii::$app->params['siteName'],
     'brandUrl' => ['/default/index'],

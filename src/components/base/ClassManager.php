@@ -1,17 +1,17 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\components\base;
+namespace psesd\sensorHub\components\base;
 
 /**
  * ClassManager Class name helper for the application.
  *
- * @author Jacob Morrison <email@ofjacob.com>
+ * @author Jacob Morrison <jmorrison@psesd.org>
  */
 class ClassManager extends \canis\base\ClassManager
 {
@@ -30,7 +30,7 @@ class ClassManager extends \canis\base\ClassManager
             'AclRole' => 'canis\acl\models\AclRole',
             'Role' => 'canis\acl\models\Role',
 
-            'User' => 'canis\sensorHub\models\User',
+            'User' => 'psesd\sensorHub\models\User',
 
             'UserDevice' => 'canis\auth\models\UserDevice',
             'Group' => 'canis\auth\models\Group',
@@ -43,7 +43,7 @@ class ClassManager extends \canis\base\ClassManager
             'Audit' => 'canis\auditable\models\Audit',
             'Meta' => 'canis\metable\models\Meta',
 
-            'SearchTermResult' => 'canis\sensorHub\components\db\behaviors\SearchTermResult'
+            'SearchTermResult' => 'psesd\sensorHub\components\db\behaviors\SearchTermResult'
         ];
     }
 }

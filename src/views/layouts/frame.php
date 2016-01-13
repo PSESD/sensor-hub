@@ -4,7 +4,7 @@ use yii\helpers\Html;
 /* @var $this \yii\web\View */
 /* @var $content string */
 
-canis\sensorHub\components\web\assetBundles\AppAsset::register($this);
+psesd\sensorHub\components\web\assetBundles\AppAsset::register($this);
 
 
 if (YII_ENV_DEV) {

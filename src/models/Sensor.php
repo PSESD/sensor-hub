@@ -1,9 +1,9 @@
 <?php
 
-namespace canis\sensorHub\models;
+namespace psesd\sensorHub\models;
 
 use Yii;
-use canis\sensors\base\Sensor as BaseSensor;
+use psesd\sensors\base\Sensor as BaseSensor;
 use canis\registry\models\Registry;
 
 /**

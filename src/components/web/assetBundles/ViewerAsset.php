@@ -1,26 +1,26 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\components\web\assetBundles;
+namespace psesd\sensorHub\components\web\assetBundles;
 
 use yii\web\AssetBundle;
 
 class ViewerAsset extends AssetBundle
 {
-    public $sourcePath = '@canis/sensorHub/assets/viewer';
+    public $sourcePath = '@psesd/sensorHub/assets/viewer';
     public $css = [
-        'css/canis.viewer.css',
+        'css/psesd.viewer.css',
     ];
     public $js = [
-        'js/canis.viewer.js',
+        'js/psesd.viewer.js',
     ];
     public $depends = [
-        'canis\sensorHub\components\web\assetBundles\AppAsset',
+        'psesd\sensorHub\components\web\assetBundles\AppAsset',
         'canis\web\assetBundles\HighchartsAsset',
         'canis\web\assetBundles\TimeAgoAsset'
     ];

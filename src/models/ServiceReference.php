@@ -1,6 +1,6 @@
 <?php
 
-namespace canis\sensorHub\models;
+namespace psesd\sensorHub\models;
 
 use Yii;
 use canis\registry\models\Registry;

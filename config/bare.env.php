@@ -5,7 +5,7 @@ defined('YII_ENV')						|| define('YII_ENV', 'dev');
 
 defined('CANIS_APP_ID')					|| define('CANIS_APP_ID', 'sensorHub');
 defined('CANIS_APP_NAME')				|| define('CANIS_APP_NAME', 'sensorHub');
-defined('CANIS_APP_NAMESPACE')			|| define('CANIS_APP_NAMESPACE', 'canis\sensorHub');
+defined('CANIS_APP_NAMESPACE')			|| define('CANIS_APP_NAMESPACE', 'psesd\sensorHub');
 
 defined('CANIS_APP_INSTANCE_ID')		|| define('CANIS_APP_INSTANCE_ID', '');
 defined('CANIS_APP_INSTANCE_VERSION')	|| define('CANIS_APP_INSTANCE_VERSION', false);

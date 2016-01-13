@@ -1,8 +1,8 @@
 <?php
-namespace canis\sensorHub;
+namespace psesd\sensorHub;
 
 use Yii;
-use canis\sensorHub\components\base\Daemon as SensorDaemon;
+use psesd\sensorHub\components\base\Daemon as SensorDaemon;
 
 use yii\base\Application;
 use yii\base\Event;
@@ -19,8 +19,8 @@ class Bootstrap implements \yii\base\BootstrapInterface
      */
     public function bootstrap($app)
     {
-        Yii::setAlias('@canis/sensorHub', __DIR__);
-        $app->registerMigrationAlias('@canis/sensorHub/migrations');
+        Yii::setAlias('@psesd/sensorHub', __DIR__);
+        $app->registerMigrationAlias('@psesd/sensorHub/migrations');
 		Event::on(Application::className(), BroadcasterModule::EVENT_COLLECT_EVENT_TYPES, [$this, 'collectEventTypes']);
         Event::on(Application::className(), BroadcasterModule::EVENT_COLLECT_EVENT_HANDLERS, [$this, 'collectEventHandlers']);
 

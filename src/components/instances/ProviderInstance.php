@@ -1,17 +1,17 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
-namespace canis\sensorHub\components\instances;
+namespace psesd\sensorHub\components\instances;
 
 use Yii;
 use yii\helpers\ArrayHelper;
 use canis\broadcaster\eventTypes\EventType;
-use canis\sensors\providers\ProviderInterface;
-use canis\sensors\base\Sensor as BaseSensor;
+use psesd\sensors\providers\ProviderInterface;
+use psesd\sensors\base\Sensor as BaseSensor;
 
 abstract class ProviderInstance extends Instance
 {

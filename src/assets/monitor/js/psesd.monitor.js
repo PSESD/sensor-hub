@@ -1,5 +1,5 @@
-function CanisMonitor($element, settings) {
-    CanisComponent.call(this);
+function PsesdMonitor($element, settings) {
+    PsesdComponent.call(this);
     var _this = this;
 	this.$element = $element.addClass('monitor');
 	this.items = {};
@@ -17,14 +17,14 @@ function CanisMonitor($element, settings) {
 	});
 }
 
-CanisMonitor.prototype = jQuery.extend(true, {}, CanisComponent.prototype);
+PsesdMonitor.prototype = jQuery.extend(true, {}, PsesdComponent.prototype);
 
-CanisMonitor.prototype.objectClass = 'CanisMonitor';
+PsesdMonitor.prototype.objectClass = 'PsesdMonitor';
 
-CanisMonitor.prototype.defaultSettings = {
+PsesdMonitor.prototype.defaultSettings = {
 };
 
-CanisMonitor.prototype.init = function() {
+PsesdMonitor.prototype.init = function() {
 	var _this = this;
 	var panelMenu = {};
 	var panelHeading = {
@@ -40,7 +40,7 @@ CanisMonitor.prototype.init = function() {
 	this.elements.$list = $("<div />", {'class': 'list-group'}).appendTo(this.elements.canvas.$body);
 };
 
-CanisMonitor.prototype._handleResponse = function(data) {
+PsesdMonitor.prototype._handleResponse = function(data) {
     var _this = this;
     var hasItems = false;
     var current = _.keys(_this.items);
@@ -48,7 +48,7 @@ CanisMonitor.prototype._handleResponse = function(data) {
     	current = _.without(current, id);
     	hasItems = true;
     	if (_this.items[id] === undefined) {
-    		_this.items[id] = new CanisItem(_this, item);
+    		_this.items[id] = new PsesdItem(_this, item);
     	}
     	_this.items[id].update(item);
     });
@@ -63,7 +63,7 @@ CanisMonitor.prototype._handleResponse = function(data) {
 	});
 };
 
-CanisMonitor.prototype.scheduleRefresh = function() {
+PsesdMonitor.prototype.scheduleRefresh = function() {
 	var _this = this;
 	if (this.scheduledRefresh !== undefined) {
 		clearTimeout(this.scheduledRefresh);
@@ -76,7 +76,7 @@ CanisMonitor.prototype.scheduleRefresh = function() {
 	}, 5000);
 };
 
-CanisMonitor.prototype._refresh = function() {
+PsesdMonitor.prototype._refresh = function() {
 	var _this = this;
 	var ajaxSettings = {};
 	ajaxSettings.url = this.settings.packageUrl;
@@ -90,7 +90,7 @@ CanisMonitor.prototype._refresh = function() {
 	jQuery.ajax(ajaxSettings);
 };
 
-function CanisItem(manager, item) {
+function PsesdItem(manager, item) {
 	this.manager = manager;
 	this.item = item;
 	this.elements = {};
@@ -98,7 +98,7 @@ function CanisItem(manager, item) {
 }
 
 
-CanisItem.prototype.sendAction = function(action) {
+PsesdItem.prototype.sendAction = function(action) {
 	var _this = this;
 	_this.startPendingAction(action.label);
 	var ajaxSettings = {};
@@ -116,15 +116,15 @@ CanisItem.prototype.sendAction = function(action) {
 	jQuery.ajax(ajaxSettings);
 };
 
-CanisItem.prototype.clearPendingAction = function() {
+PsesdItem.prototype.clearPendingAction = function() {
 	this.elements.actions.$buttonGroup.show();
 };
 
-CanisItem.prototype.startPendingAction = function(actionDescription) {
+PsesdItem.prototype.startPendingAction = function(actionDescription) {
 	this.elements.actions.$buttonGroup.hide();
 };
 
-CanisItem.prototype.init = function() {
+PsesdItem.prototype.init = function() {
 	this.elements.$canvas = $("<div />", {'class': 'list-group-item'}).appendTo(this.manager.elements.$list);
 	// this.elements.$pendingAction = $("<div />", {'class': 'label label-default'}).hide().appendTo(this.elements.$canvas);
 	// this.elements.actions = {};
@@ -133,7 +133,7 @@ CanisItem.prototype.init = function() {
 	// this.elements.actions.$menu = $("<ul />", {'class': 'dropdown-menu'}).appendTo(this.elements.actions.$buttonGroup);
 	this.elements.$webActions = $("<div />", {'class': 'btn-group btn-group-sm pull-right'}).appendTo(this.elements.$canvas);
 	
-	this.elements.$components = $("<div />", {'class': 'btn-group btn-group pull-right canis-components'}).appendTo(this.elements.$canvas);
+	this.elements.$components = $("<div />", {'class': 'btn-group btn-group pull-right psesd-components'}).appendTo(this.elements.$canvas);
 	this.elements.$titleContainer = $("<h4 />", {'class': 'list-group-item-heading'}).appendTo(this.elements.$canvas);
 	this.elements.$type = $("<div />", {'class': 'list-group-item-text text-muted'}).appendTo(this.elements.$canvas);
 	this.elements.$title = $("<a />", {'class': '', 'href': '#', 'data-handler': 'background'}).appendTo(this.elements.$titleContainer);
@@ -141,14 +141,14 @@ CanisItem.prototype.init = function() {
 	this.elements.$infoIcon = $("<span />", {'class': 'text-primary fa fa-info-circle'}).appendTo(this.elements.$titleContainer).hide();
 }
 
-CanisItem.prototype.setState = function(state) {
+PsesdItem.prototype.setState = function(state) {
 	this.elements.$canvas.removeClass('list-group-item-success list-group-item-info list-group-item-danger list-group-item-warning');
 	if (state) {
 		this.elements.$canvas.addClass('list-group-item-'+state);
 	}
 };
 
-CanisItem.prototype.updateItemActions = function() {
+PsesdItem.prototype.updateItemActions = function() {
 	var _this = this;
 	return;
 	if (_.isEmpty(this.item.itemActions)) {
@@ -184,7 +184,7 @@ CanisItem.prototype.updateItemActions = function() {
 	}
 };
 
-CanisItem.prototype.updateInfo = function() {
+PsesdItem.prototype.updateInfo = function() {
 	if (_.isEmpty(this.item.info)) {
 		this.elements.$infoIcon.hide();
 	} else {
@@ -208,7 +208,7 @@ CanisItem.prototype.updateInfo = function() {
 	}
 };
 
-CanisItem.prototype.updateWebActions = function() {
+PsesdItem.prototype.updateWebActions = function() {
 	var _this = this;
 	return;
 	this.elements.$webActions.html('');
@@ -238,7 +238,7 @@ CanisItem.prototype.updateWebActions = function() {
 	});
 };
 
-CanisItem.prototype.updateComponents = function() {
+PsesdItem.prototype.updateComponents = function() {
 	var _this = this;
 	if (this.elements.$components.elements === undefined) {
 		this.elements.$components.elements = {};
@@ -306,7 +306,7 @@ CanisItem.prototype.updateComponents = function() {
 	});
 };
 
-CanisItem.prototype.generateList = function(list, $parent, truncated, label) {
+PsesdItem.prototype.generateList = function(list, $parent, truncated, label) {
 	var parentItems = $parent.data('items');
 	if (!parentItems) {
 		parentItems = {};
@@ -377,17 +377,17 @@ CanisItem.prototype.generateList = function(list, $parent, truncated, label) {
 	}
 	$parent.data('items', parentItems);
 };
-CanisItem.prototype.show = function() {
+PsesdItem.prototype.show = function() {
 	this.elements.$canvas.show();
 };
-CanisItem.prototype.hide = function() {
+PsesdItem.prototype.hide = function() {
 	this.elements.$canvas.hide();
 };
-CanisItem.prototype.updateUptime = function() {
+PsesdItem.prototype.updateUptime = function() {
 	
 };
 
-CanisItem.prototype.update = function(item) {
+PsesdItem.prototype.update = function(item) {
 	this.item = item;
 	this.elements.$title.html(item.descriptor).attr({'href': item.url});
 	this.elements.$type.html(item.objectTypeDescriptor);
@@ -401,6 +401,6 @@ CanisItem.prototype.update = function(item) {
 $preparer.add(function(context) {
 	$('[data-monitor]', context).each(function() {
 		var settings = $(this).data('monitor');
-		$(this).data('monitor', new CanisMonitor($(this), settings));
+		$(this).data('monitor', new PsesdMonitor($(this), settings));
 	});
 });

@@ -1,5 +1,5 @@
-function CanisSensorObjectBrowser($element, settings) {
-    CanisComponent.call(this);
+function PsesdSensorObjectBrowser($element, settings) {
+    PsesdComponent.call(this);
     var _this = this;
 	this.$element = $element.addClass('browser');
 	this.$element.on('remove', function() {
@@ -22,14 +22,14 @@ function CanisSensorObjectBrowser($element, settings) {
 	this.isInitializing = false;
 }
 
-CanisSensorObjectBrowser.prototype = jQuery.extend(true, {}, CanisComponent.prototype);
+PsesdSensorObjectBrowser.prototype = jQuery.extend(true, {}, PsesdComponent.prototype);
 
-CanisSensorObjectBrowser.prototype.objectClass = 'CanisSensorObjectBrowser';
+PsesdSensorObjectBrowser.prototype.objectClass = 'PsesdSensorObjectBrowser';
 
-CanisSensorObjectBrowser.prototype.defaultSettings = {
+PsesdSensorObjectBrowser.prototype.defaultSettings = {
 };
 
-CanisSensorObjectBrowser.prototype.init = function() {
+PsesdSensorObjectBrowser.prototype.init = function() {
 	var _this = this;
 	this.elements.$canvas = $("<div />", {'class': 'row'}).appendTo(this.$element);
 	this.elements.$notice = $("<div />", {'class': 'alert alert-warning'}).html('').appendTo(this.elements.$canvas).hide();
@@ -38,7 +38,7 @@ CanisSensorObjectBrowser.prototype.init = function() {
 	this.elements.$content = $("<div />", {'class': 'col-xs-9'}).hide().appendTo(this.elements.$canvas);
 };
 
-CanisSensorObjectBrowser.prototype._handleResponse = function(data) {
+PsesdSensorObjectBrowser.prototype._handleResponse = function(data) {
 	var _this = this;
 	var foundItems = false;
 	var refreshTime = Date.now();
@@ -105,7 +105,7 @@ CanisSensorObjectBrowser.prototype._handleResponse = function(data) {
 	}
 };
 
-CanisSensorObjectBrowser.prototype.scheduleRefresh = function() {
+PsesdSensorObjectBrowser.prototype.scheduleRefresh = function() {
 	var _this = this;
 	if (this.scheduledRefresh !== undefined) {
 		clearTimeout(this.scheduledRefresh);
@@ -119,7 +119,7 @@ CanisSensorObjectBrowser.prototype.scheduleRefresh = function() {
 	}, 5000);
 };
 
-CanisSensorObjectBrowser.prototype._refresh = function() {
+PsesdSensorObjectBrowser.prototype._refresh = function() {
 	var _this = this;
 	var ajaxSettings = {};
 	ajaxSettings.url = this.settings.url;
@@ -142,7 +142,7 @@ CanisSensorObjectBrowser.prototype._refresh = function() {
 	// }
 };
 
-CanisSensorObjectBrowser.prototype.selectObject = function(item) {
+PsesdSensorObjectBrowser.prototype.selectObject = function(item) {
 	var _this = this;
 	if (!this.expanded) {
 		this.expanded = true;
@@ -169,6 +169,6 @@ CanisSensorObjectBrowser.prototype.selectObject = function(item) {
 $preparer.add(function(context) {
 	$('[data-object-browser]', context).each(function() {
 		var settings = $(this).data('object-browser');
-		$(this).data('object-browser', new CanisSensorObjectBrowser($(this), settings));
+		$(this).data('object-browser', new PsesdSensorObjectBrowser($(this), settings));
 	});
 });

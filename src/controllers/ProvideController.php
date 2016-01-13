@@ -1,15 +1,15 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\controllers;
+namespace psesd\sensorHub\controllers;
 
 use Yii;
-use canis\sensorHub\models\Provider;
+use psesd\sensorHub\models\Provider;
 use yii\web\NotFoundHttpException;
 use yii\web\NotAcceptableHttpException;
 use yii\web\UnauthorizedHttpException;
@@ -17,7 +17,7 @@ use yii\web\UnprocessableEntityHttpException;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 
-class ProvideController extends \canis\sensorHub\components\web\Controller
+class ProvideController extends \psesd\sensorHub\components\web\Controller
 {
     public function beforeAction($action)
     {

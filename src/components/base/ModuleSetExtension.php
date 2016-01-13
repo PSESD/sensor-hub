@@ -6,14 +6,14 @@
  * @license http://psesd.org/license/
  */
 
-namespace canis\sensorHub\components\base;
+namespace psesd\sensorHub\components\base;
 
 use Yii;
 
 /**
  * ModuleSetExtension base class for a module set.
  *
- * @author Jacob Morrison <email@ofjacob.com>
+ * @author Jacob Morrison <jmorrison@psesd.org>
  */
 abstract class ModuleSetExtension implements \yii\base\BootstrapInterface
 {

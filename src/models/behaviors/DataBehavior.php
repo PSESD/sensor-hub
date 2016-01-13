@@ -1,6 +1,6 @@
 <?php
 
-namespace canis\sensorHub\models\behaviors;
+namespace psesd\sensorHub\models\behaviors;
 
 use Yii;
 

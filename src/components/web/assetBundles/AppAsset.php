@@ -1,18 +1,18 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\components\web\assetBundles;
+namespace psesd\sensorHub\components\web\assetBundles;
 
 use yii\web\AssetBundle;
 
 class AppAsset extends AssetBundle
 {
-    public $sourcePath = '@canis/sensorHub/assets/app';
+    public $sourcePath = '@psesd/sensorHub/assets/app';
     public $css = [
         'css/app.css',
     ];

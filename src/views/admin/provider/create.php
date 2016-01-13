@@ -17,7 +17,7 @@ foreach ($model->dataObject->setupFields() as $id => $field) {
 		$field['on'] = ['update', 'restore', 'create'];
 	}
 	if (!in_array($scenario, $field['on'])) { continue; }
-	echo $this->render('@canis/sensorHub/views/base/_field', ['model' => $model, 'field' => $field, 'id' => $id, 'instance' => $instance]);
+	echo $this->render('@psesd/sensorHub/views/base/_field', ['model' => $model, 'field' => $field, 'id' => $id, 'instance' => $instance]);
 }
 echo Html::endTag('div');
 echo Html::endTag('div');

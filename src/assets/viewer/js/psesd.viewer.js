@@ -4,8 +4,8 @@ Highcharts.setOptions({
   }
 });
 
-function CanisSensorObjectViewer($element, settings) {
-    CanisComponent.call(this);
+function PsesdSensorObjectViewer($element, settings) {
+    PsesdComponent.call(this);
     var _this = this;
 	this.$element = $element.addClass('sensor-viewer');
 	this.sensorObject = false;
@@ -26,14 +26,14 @@ function CanisSensorObjectViewer($element, settings) {
 	});
 }
 
-CanisSensorObjectViewer.prototype = jQuery.extend(true, {}, CanisComponent.prototype);
+PsesdSensorObjectViewer.prototype = jQuery.extend(true, {}, PsesdComponent.prototype);
 
-CanisSensorObjectViewer.prototype.objectClass = 'CanisSensorObjectViewer';
+PsesdSensorObjectViewer.prototype.objectClass = 'PsesdSensorObjectViewer';
 
-CanisSensorObjectViewer.prototype.defaultSettings = {
+PsesdSensorObjectViewer.prototype.defaultSettings = {
 };
 
-CanisSensorObjectViewer.prototype.switchObject = function() {
+PsesdSensorObjectViewer.prototype.switchObject = function() {
 	var _this = $(this).data('manager');
 	var request = {};
 	request.url = $(this).attr('href');
@@ -55,7 +55,7 @@ CanisSensorObjectViewer.prototype.switchObject = function() {
 	return false;
 };
 
-CanisSensorObjectViewer.prototype.init = function() {
+PsesdSensorObjectViewer.prototype.init = function() {
 	var _this = this;
 	var panelMenu = {};
 	var panelHeading = {
@@ -80,7 +80,7 @@ CanisSensorObjectViewer.prototype.init = function() {
 	this.elements.$notice = $("<div />", {'class': 'alert alert-warning'}).html('').appendTo(this.elements.canvas.$body).hide();
 };
 
-CanisSensorObjectViewer.prototype._handleResponse = function(data) {
+PsesdSensorObjectViewer.prototype._handleResponse = function(data) {
     var _this = this;
     if (data.object === undefined) {
     	this.elements.$notice.html("Invalid server response").show();
@@ -88,13 +88,13 @@ CanisSensorObjectViewer.prototype._handleResponse = function(data) {
     	this.elements.$notice.hide();
     }
     if (!this.sensorObject) {
-		this.sensorObject = new CanisSensorObject(this, data.object);
+		this.sensorObject = new PsesdSensorObject(this, data.object);
 	} else {
 		this.sensorObject.refresh(data.object);
 	}
 };
 
-CanisSensorObjectViewer.prototype.scheduleRefresh = function() {
+PsesdSensorObjectViewer.prototype.scheduleRefresh = function() {
 	var _this = this;
 	if (this.scheduledRefresh !== undefined) {
 		clearTimeout(this.scheduledRefresh);
@@ -107,7 +107,7 @@ CanisSensorObjectViewer.prototype.scheduleRefresh = function() {
 	}, 15000);
 };
 
-CanisSensorObjectViewer.prototype._refresh = function() {
+PsesdSensorObjectViewer.prototype._refresh = function() {
 	var _this = this;
 	var ajaxSettings = {};
 	ajaxSettings.url = this.settings.packageUrl;
@@ -122,7 +122,7 @@ CanisSensorObjectViewer.prototype._refresh = function() {
 	jQuery.ajax(ajaxSettings);
 };
 
-function CanisSensorObject(manager, item) {
+function PsesdSensorObject(manager, item) {
 	this.manager = manager;
 	this.item = item;
 	this.elements = {};
@@ -131,14 +131,14 @@ function CanisSensorObject(manager, item) {
 	this.refresh(item);
 }
 
-CanisSensorObject.prototype.init = function() {
+PsesdSensorObject.prototype.init = function() {
 	this.elements.$canvas = $("<div />", {'class': 'row-container'}).appendTo(this.manager.elements.canvas.$body);
 	this.elements.rows = [];
 	this.elements.currentRow = {'colsLeft': 12, 'items': [], '$element': $("<div />", {'class': 'row'}).appendTo(this.elements.$canvas)};
 	this.elements.rows.push(this.elements.currentRow);
 }
 
-CanisSensorObject.prototype.refresh = function(item) {
+PsesdSensorObject.prototype.refresh = function(item) {
 	// console.log(['refresh', item, this.constructor.name]);
 	var _this = this;
 	this.item = item;
@@ -159,7 +159,7 @@ CanisSensorObject.prototype.refresh = function(item) {
 		if (viewComponent.handler === undefined) {
 			return true;
 		}
-	    var dataTypeClass = 'CanisObjectColumn_' + viewComponent.handler.capitalize();
+	    var dataTypeClass = 'PsesdObjectColumn_' + viewComponent.handler.capitalize();
 	    if (window[dataTypeClass] !== undefined) {
 	    	if (viewComponent.columns === undefined) {
 	    		viewComponent.columns = viewComponent.minColumns || minimumColSize;
@@ -185,7 +185,7 @@ CanisSensorObject.prototype.refresh = function(item) {
     
 };
 
-CanisSensorObject.prototype.fillRow = function (row) {
+PsesdSensorObject.prototype.fillRow = function (row) {
 	var lastCols = row.colsLeft;
 	while (row.colsLeft > 0) {
 		jQuery.each(row.items, function(i, col) {
@@ -201,15 +201,15 @@ CanisSensorObject.prototype.fillRow = function (row) {
 		lastCols = row.colsLeft;
 	}
 };
-CanisSensorObject.prototype.show = function() {
+PsesdSensorObject.prototype.show = function() {
 	this.elements.$canvas.show();
 };
-CanisSensorObject.prototype.hide = function() {
+PsesdSensorObject.prototype.hide = function() {
 	this.elements.$canvas.hide();
 };
 
 
-function CanisObjectColumn(sensorObject, viewComponent, $row) {
+function PsesdObjectColumn(sensorObject, viewComponent, $row) {
 	this.sensorObject = sensorObject;
 	this.viewComponent = viewComponent;
 	this.$parentRow = $row;
@@ -217,52 +217,52 @@ function CanisObjectColumn(sensorObject, viewComponent, $row) {
 	this.init(viewComponent);
 	this.refresh(viewComponent);
 }
-CanisObjectColumn.prototype = Object.create(CanisComponent.prototype);
-CanisObjectColumn.prototype.objectClass = 'CanisObjectColumn';
-CanisObjectColumn.prototype.constructor = CanisObjectColumn;
+PsesdObjectColumn.prototype = Object.create(PsesdComponent.prototype);
+PsesdObjectColumn.prototype.objectClass = 'PsesdObjectColumn';
+PsesdObjectColumn.prototype.constructor = PsesdObjectColumn;
 
-CanisObjectColumn.prototype.init = function(viewComponent) {
+PsesdObjectColumn.prototype.init = function(viewComponent) {
 	this.elements.$column = $("<div />", {'class': ''}).appendTo(this.$parentRow);
 	this.elements.panel = this.generatePanel(this.elements.$column, this.getPanelHeading());
 	this.elements.$canvas = this.elements.panel.$body;
 }
 
-CanisObjectColumn.prototype.getPanelHeading = function() {
+PsesdObjectColumn.prototype.getPanelHeading = function() {
 	return this.viewComponent.handler.capitalize();
 };
 
-CanisObjectColumn.prototype.childDialog = function() {
+PsesdObjectColumn.prototype.childDialog = function() {
 	console.log($(this).attr('href'));
 	return false;
 };
 
-CanisObjectColumn.prototype.refresh = function(viewComponent) {
+PsesdObjectColumn.prototype.refresh = function(viewComponent) {
 	// console.log(['refresh', viewComponent, this.constructor.name]);
 	this.viewComponent = viewComponent;
 
 };
 
-CanisObjectColumn.prototype.setColumnSize = function(size) {
+PsesdObjectColumn.prototype.setColumnSize = function(size) {
 	var colSize = 'sm';
 	this.columnSize = size;
 	this.elements.$column.removeClass('col-'+colSize+'-1 col-'+colSize+'-2 col-'+colSize+'-3 col-'+colSize+'-4 col-'+colSize+'-5 col-'+colSize+'-6 col-'+colSize+'-7 col-'+colSize+'-8 col-'+colSize+'-9 col-'+colSize+'-10 col-'+colSize+'-11 col-'+colSize+'-12');
 	this.elements.$column.addClass('col-'+colSize+'-'+size);
 };
 
-CanisObjectColumn.prototype.increaseColumnSize = function(size) {
+PsesdObjectColumn.prototype.increaseColumnSize = function(size) {
 	if (size === undefined) {
 		size = 1;
 	}
 	return this.setColumnSize(size+this.columnSize);
 };
 
-CanisObjectColumn.prototype.show = function() {
+PsesdObjectColumn.prototype.show = function() {
 	this.elements.$column.show();
 };
-CanisObjectColumn.prototype.hide = function() {
+PsesdObjectColumn.prototype.hide = function() {
 	this.elements.$column.hide();
 };
-CanisObjectColumn.prototype.parseUrl = function(url, replacements) {
+PsesdObjectColumn.prototype.parseUrl = function(url, replacements) {
 	if (replacements === undefined) {
 		replacements = {};
 	}
@@ -273,23 +273,23 @@ CanisObjectColumn.prototype.parseUrl = function(url, replacements) {
 	return url;
 };
 
-function CanisObjectColumn_Notes(sensorObject, viewComponent, $row) {
+function PsesdObjectColumn_Notes(sensorObject, viewComponent, $row) {
     this.items = {};
-    CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
+    PsesdObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
 
-CanisObjectColumn_Notes.prototype = Object.create(CanisObjectColumn.prototype);
-CanisObjectColumn_Notes.prototype.objectClass = 'CanisObjectColumn_Notes';
-CanisObjectColumn_Notes.prototype.constructor = CanisObjectColumn_Notes;
+PsesdObjectColumn_Notes.prototype = Object.create(PsesdObjectColumn.prototype);
+PsesdObjectColumn_Notes.prototype.objectClass = 'PsesdObjectColumn_Notes';
+PsesdObjectColumn_Notes.prototype.constructor = PsesdObjectColumn_Notes;
 
-CanisObjectColumn_Notes.prototype.init = function(viewComponent) {
-	CanisObjectColumn.prototype.init.call(this, viewComponent);
+PsesdObjectColumn_Notes.prototype.init = function(viewComponent) {
+	PsesdObjectColumn.prototype.init.call(this, viewComponent);
 
     this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No notes have been added').appendTo(this.elements.$canvas);
     this.elements.$list = $("<div />", {'class': 'list-group'}).appendTo(this.elements.$canvas);
 };
-CanisObjectColumn_Notes.prototype.refresh = function(viewComponent) {
-	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+PsesdObjectColumn_Notes.prototype.refresh = function(viewComponent) {
+	PsesdObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
 	var hasItems = false;
 	jQuery.each(this.viewComponent.items, function(index, item) {
@@ -317,7 +317,7 @@ CanisObjectColumn_Notes.prototype.refresh = function(viewComponent) {
 	}
 };
 
-CanisObjectColumn_Notes.prototype.getPanelHeading = function() {
+PsesdObjectColumn_Notes.prototype.getPanelHeading = function() {
 	var heading = {};
 	heading.label = this.viewComponent.handler.capitalize();
 	heading.menu = {};
@@ -325,22 +325,22 @@ CanisObjectColumn_Notes.prototype.getPanelHeading = function() {
 	return heading;
 };
 
-function CanisObjectColumn_Contacts(sensorObject, viewComponent, $row) {
+function PsesdObjectColumn_Contacts(sensorObject, viewComponent, $row) {
     this.items = {};
-    CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
+    PsesdObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
-CanisObjectColumn_Contacts.prototype = Object.create(CanisObjectColumn.prototype);
-CanisObjectColumn_Contacts.prototype.objectClass = 'CanisObjectColumn_Contacts';
-CanisObjectColumn_Contacts.prototype.constructor = CanisObjectColumn_Contacts;
+PsesdObjectColumn_Contacts.prototype = Object.create(PsesdObjectColumn.prototype);
+PsesdObjectColumn_Contacts.prototype.objectClass = 'PsesdObjectColumn_Contacts';
+PsesdObjectColumn_Contacts.prototype.constructor = PsesdObjectColumn_Contacts;
 
-CanisObjectColumn_Contacts.prototype.init = function(viewComponent) {
-	CanisObjectColumn.prototype.init.call(this, viewComponent);
+PsesdObjectColumn_Contacts.prototype.init = function(viewComponent) {
+	PsesdObjectColumn.prototype.init.call(this, viewComponent);
 
     this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No contacts have been added').appendTo(this.elements.$canvas);
     this.elements.$list = $("<div />", {'class': 'list-group'}).appendTo(this.elements.$canvas);
 };
-CanisObjectColumn_Contacts.prototype.refresh = function(viewComponent) {
-	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+PsesdObjectColumn_Contacts.prototype.refresh = function(viewComponent) {
+	PsesdObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
 	var hasItems = false;
 	jQuery.each(this.viewComponent.items, function(index, item) {
@@ -375,7 +375,7 @@ CanisObjectColumn_Contacts.prototype.refresh = function(viewComponent) {
 	}
 };
 
-CanisObjectColumn_Contacts.prototype.getPanelHeading = function() {
+PsesdObjectColumn_Contacts.prototype.getPanelHeading = function() {
 	var heading = {};
 	heading.label = this.viewComponent.handler.capitalize();
 	heading.menu = {};
@@ -385,21 +385,21 @@ CanisObjectColumn_Contacts.prototype.getPanelHeading = function() {
 
 
 
-function CanisObjectColumn_Info(sensorObject, viewComponent, $row) {
-    CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
+function PsesdObjectColumn_Info(sensorObject, viewComponent, $row) {
+    PsesdObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
-CanisObjectColumn_Info.prototype = Object.create(CanisObjectColumn.prototype);
-CanisObjectColumn_Info.prototype.objectClass = 'CanisObjectColumn_Info';
-CanisObjectColumn_Info.prototype.constructor = CanisObjectColumn_Info;
+PsesdObjectColumn_Info.prototype = Object.create(PsesdObjectColumn.prototype);
+PsesdObjectColumn_Info.prototype.objectClass = 'PsesdObjectColumn_Info';
+PsesdObjectColumn_Info.prototype.constructor = PsesdObjectColumn_Info;
 
-CanisObjectColumn_Info.prototype.init = function(viewComponent) {
-	CanisObjectColumn.prototype.init.call(this, viewComponent);
+PsesdObjectColumn_Info.prototype.init = function(viewComponent) {
+	PsesdObjectColumn.prototype.init.call(this, viewComponent);
 	this.elements.items = {};
     this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No additional information is known').appendTo(this.elements.$canvas);
     this.elements.$table = $("<table />", {'class': 'table table-striped'}).appendTo(this.elements.$canvas);
 };
-CanisObjectColumn_Info.prototype.refresh = function(viewComponent) {
-	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+PsesdObjectColumn_Info.prototype.refresh = function(viewComponent) {
+	PsesdObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
 	jQuery.each(this.sensorObject.item.info, function(label, value) {
 		if (_this.elements.items[label] === undefined) {
@@ -412,21 +412,21 @@ CanisObjectColumn_Info.prototype.refresh = function(viewComponent) {
 	});
 };
 
-function CanisObjectColumn_List(sensorObject, viewComponent, $row) {
+function PsesdObjectColumn_List(sensorObject, viewComponent, $row) {
 	this.items = {};
-    CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
+    PsesdObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
-CanisObjectColumn_List.prototype = Object.create(CanisObjectColumn.prototype);
-CanisObjectColumn_List.prototype.objectClass = 'CanisObjectColumn_List';
-CanisObjectColumn_List.prototype.constructor = CanisObjectColumn_List;
-CanisObjectColumn_List.prototype.init = function(viewComponent) {
-	CanisObjectColumn.prototype.init.call(this, viewComponent);
+PsesdObjectColumn_List.prototype = Object.create(PsesdObjectColumn.prototype);
+PsesdObjectColumn_List.prototype.objectClass = 'PsesdObjectColumn_List';
+PsesdObjectColumn_List.prototype.constructor = PsesdObjectColumn_List;
+PsesdObjectColumn_List.prototype.init = function(viewComponent) {
+	PsesdObjectColumn.prototype.init.call(this, viewComponent);
 
     this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No '+ this.viewComponent.header.toLowerCase() +' found').appendTo(this.elements.$canvas);
     this.elements.$list = $("<div />", {'class': 'list-group', 'style': 'overflow-y: auto; max-height: 150px'}).appendTo(this.elements.$canvas);
 };
-CanisObjectColumn_List.prototype.refresh = function(viewComponent) {
-	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+PsesdObjectColumn_List.prototype.refresh = function(viewComponent) {
+	PsesdObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
 	var hasItems = false;
 	jQuery.each(this.viewComponent.items, function(itemId, item) {
@@ -462,27 +462,27 @@ CanisObjectColumn_List.prototype.refresh = function(viewComponent) {
 		this.elements.$emptyNotice.show();
 	}
 };
-CanisObjectColumn_List.prototype.getPanelHeading = function() {
+PsesdObjectColumn_List.prototype.getPanelHeading = function() {
 	var heading = {};
 	heading.label = this.viewComponent.header;
 	return heading;
 };
 
 
-function CanisObjectColumn_SensorState(sensorObject, viewComponent, $row) {
-    CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
+function PsesdObjectColumn_SensorState(sensorObject, viewComponent, $row) {
+    PsesdObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
-CanisObjectColumn_SensorState.prototype = Object.create(CanisObjectColumn.prototype);
-CanisObjectColumn_SensorState.prototype.objectClass = 'CanisObjectColumn_SensorState';
-CanisObjectColumn_SensorState.prototype.constructor = CanisObjectColumn_SensorState;
+PsesdObjectColumn_SensorState.prototype = Object.create(PsesdObjectColumn.prototype);
+PsesdObjectColumn_SensorState.prototype.objectClass = 'PsesdObjectColumn_SensorState';
+PsesdObjectColumn_SensorState.prototype.constructor = PsesdObjectColumn_SensorState;
 
-CanisObjectColumn_SensorState.prototype.getPanelHeading = function() {
+PsesdObjectColumn_SensorState.prototype.getPanelHeading = function() {
 	var heading = {};
 	heading.label = 'Sensor';
 	return heading;
 };
-CanisObjectColumn_SensorState.prototype.init = function(viewComponent) {
-	CanisObjectColumn.prototype.init.call(this, viewComponent);
+PsesdObjectColumn_SensorState.prototype.init = function(viewComponent) {
+	PsesdObjectColumn.prototype.init.call(this, viewComponent);
     this.elements.$statusList = $("<div />", {'class': 'list-group'}).appendTo(this.elements.$canvas);
     this.elements.$statusItem = $("<div />", {'class': 'list-group-item'}).appendTo(this.elements.$statusList);
     this.elements.$statusItemTitle = $("<h3 />", {'class': 'list-group-item-heading'}).appendTo(this.elements.$statusItem);
@@ -490,8 +490,8 @@ CanisObjectColumn_SensorState.prototype.init = function(viewComponent) {
     this.elements.$dateItem = $("<div />", {'class': 'list-group-item'}).html("Last checked ").appendTo(this.elements.$statusList);
     this.elements.$dateItemText = $("<time />", {'class': 'timeago', 'datetime': ''}).appendTo(this.elements.$dateItem);
 };
-CanisObjectColumn_SensorState.prototype.refresh = function(viewComponent) {
-	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+PsesdObjectColumn_SensorState.prototype.refresh = function(viewComponent) {
+	PsesdObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
 	this.elements.$statusItemTitle.html(this.viewComponent.stateDescription);
 	this.elements.$statusItem.removeClass('list-group-item-success list-group-item-info list-group-item-danger list-group-item-warning');
@@ -502,27 +502,27 @@ CanisObjectColumn_SensorState.prototype.refresh = function(viewComponent) {
 
 
 
-function CanisObjectColumn_SensorData(sensorObject, viewComponent, $row) {
+function PsesdObjectColumn_SensorData(sensorObject, viewComponent, $row) {
 	this.chart = false;
-    CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
+    PsesdObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
-CanisObjectColumn_SensorData.prototype = Object.create(CanisObjectColumn.prototype);
-CanisObjectColumn_SensorData.prototype.objectClass = 'CanisObjectColumn_SensorData';
-CanisObjectColumn_SensorData.prototype.constructor = CanisObjectColumn_SensorData;
+PsesdObjectColumn_SensorData.prototype = Object.create(PsesdObjectColumn.prototype);
+PsesdObjectColumn_SensorData.prototype.objectClass = 'PsesdObjectColumn_SensorData';
+PsesdObjectColumn_SensorData.prototype.constructor = PsesdObjectColumn_SensorData;
 
-CanisObjectColumn_SensorData.prototype.getPanelHeading = function() {
+PsesdObjectColumn_SensorData.prototype.getPanelHeading = function() {
 	var heading = {};
 	heading.label = 'Data';
 	return heading;
 };
 
-CanisObjectColumn_SensorData.prototype.init = function(viewComponent) {
-	CanisObjectColumn.prototype.init.call(this, viewComponent);
+PsesdObjectColumn_SensorData.prototype.init = function(viewComponent) {
+	PsesdObjectColumn.prototype.init.call(this, viewComponent);
     this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No sensor data has been recorded').appendTo(this.elements.$canvas);
     this.elements.$chart = $("<div />", {'class': ''}).appendTo(this.elements.$canvas);
 };
 
-CanisObjectColumn_SensorData.prototype.parseData = function(dataItems) {
+PsesdObjectColumn_SensorData.prototype.parseData = function(dataItems) {
 	var data = [];
 	jQuery.each(dataItems, function(i, item) {
 		data.push({'x': new Date(item[0]), 'y': item[1], 'name': item[2]});
@@ -530,7 +530,7 @@ CanisObjectColumn_SensorData.prototype.parseData = function(dataItems) {
 	return data;
 };
 
-CanisObjectColumn_SensorData.prototype.initChart = function($chart, data) {
+PsesdObjectColumn_SensorData.prototype.initChart = function($chart, data) {
 	var options = {};
 	options.chart = {'zoomType': 'x'};
 	options.title = {'text': false};
@@ -567,15 +567,15 @@ CanisObjectColumn_SensorData.prototype.initChart = function($chart, data) {
 	return data;
 };
 
-CanisObjectColumn_SensorData.prototype.updateChart = function($chart, data) {
+PsesdObjectColumn_SensorData.prototype.updateChart = function($chart, data) {
 	console.log(['update', data]);
 	this.chart.series[0].update({
 	    data: data
 	}, true);
 };
 
-CanisObjectColumn_SensorData.prototype.refresh = function(viewComponent) {
-	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+PsesdObjectColumn_SensorData.prototype.refresh = function(viewComponent) {
+	PsesdObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
 	var data = this.parseData(this.viewComponent.items);
 	var hasItems = data.length > 0;
@@ -596,26 +596,26 @@ CanisObjectColumn_SensorData.prototype.refresh = function(viewComponent) {
 };
 
 
-function CanisObjectColumn_SensorEvents(sensorObject, viewComponent, $row) {
+function PsesdObjectColumn_SensorEvents(sensorObject, viewComponent, $row) {
 	this.items = {};
-    CanisObjectColumn.call(this, sensorObject, viewComponent, $row);
+    PsesdObjectColumn.call(this, sensorObject, viewComponent, $row);
 }
-CanisObjectColumn_SensorEvents.prototype = Object.create(CanisObjectColumn.prototype);
-CanisObjectColumn_SensorEvents.prototype.objectClass = 'CanisObjectColumn_SensorEvents';
-CanisObjectColumn_SensorEvents.prototype.constructor = CanisObjectColumn_SensorEvents;
-CanisObjectColumn_SensorEvents.prototype.getPanelHeading = function() {
+PsesdObjectColumn_SensorEvents.prototype = Object.create(PsesdObjectColumn.prototype);
+PsesdObjectColumn_SensorEvents.prototype.objectClass = 'PsesdObjectColumn_SensorEvents';
+PsesdObjectColumn_SensorEvents.prototype.constructor = PsesdObjectColumn_SensorEvents;
+PsesdObjectColumn_SensorEvents.prototype.getPanelHeading = function() {
 	var heading = {};
 	heading.label = 'Events';
 	return heading;
 };
 
-CanisObjectColumn_SensorEvents.prototype.init = function(viewComponent) {
-	CanisObjectColumn.prototype.init.call(this, viewComponent);
+PsesdObjectColumn_SensorEvents.prototype.init = function(viewComponent) {
+	PsesdObjectColumn.prototype.init.call(this, viewComponent);
     this.elements.$emptyNotice = $("<div />", {'class': 'alert alert-warning'}).hide().html('No sensor events have been recorded').appendTo(this.elements.$canvas);
     this.elements.$list = $("<div />", {'class': 'list-group', 'style': 'overflow-y: auto; max-height: 300px'}).appendTo(this.elements.$canvas);
 };
-CanisObjectColumn_SensorEvents.prototype.refresh = function(viewComponent) {
-	CanisObjectColumn.prototype.refresh.call(this, viewComponent);
+PsesdObjectColumn_SensorEvents.prototype.refresh = function(viewComponent) {
+	PsesdObjectColumn.prototype.refresh.call(this, viewComponent);
 	var _this = this;
 	var hasItems = false;
 	jQuery.each(this.viewComponent.items, function(itemId, item) {
@@ -655,6 +655,6 @@ $preparer.add(function(context) {
 	$('[data-object-viewer]', context).each(function() {
 		var settings = $(this).data('object-viewer');
 		//if (typeof settings === 'object') { return; }
-		$(this).data('object-viewer', new CanisSensorObjectViewer($(this), settings));
+		$(this).data('object-viewer', new PsesdSensorObjectViewer($(this), settings));
 	});
 });

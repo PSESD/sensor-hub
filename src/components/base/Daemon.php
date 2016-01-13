@@ -1,23 +1,23 @@
 <?php
 /**
- * @link http://canis.io/
+ * @link https://www.psesd.org/
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\components\base;
+namespace psesd\sensorHub\components\base;
 
 use Yii;
 use canis\daemon\Daemon as DaemonBase;
 use yii\helpers\Console;
 use canis\caching\Cacher;
-use canis\sensorHub\models\Sensor;
+use psesd\sensorHub\models\Sensor;
 
 /**
  * Daemon [[@doctodo class_description:canis\base\Daemon]].
  *
- * @author Jacob Morrison <email@ofjacob.com>
+ * @author Jacob Morrison <jmorrison@psesd.org>
  */
 class Daemon extends DaemonBase
 {

@@ -1,11 +1,11 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
-namespace canis\sensorHub\components\instances;
+namespace psesd\sensorHub\components\instances;
 
 use Yii;
 use yii\helpers\Url;
@@ -16,27 +16,27 @@ use linslin\yii2\curl;
 
 use canis\registry\models\Registry;
 
-use canis\sensors\resources\ResourceInterface;
-use canis\sensors\resourceReferences\ResourceReferenceInterface;
-use canis\sensors\sites\SiteInterface;
-use canis\sensors\base\SensorInterface;
-use canis\sensors\services\ServiceInterface;
-use canis\sensors\serviceReferences\ServiceReferenceInterface;
-use canis\sensors\servers\ServerInterface;
-// use canis\sensors\base\SensorInterface;
-use canis\sensors\providers\ProviderInterface;
+use psesd\sensors\resources\ResourceInterface;
+use psesd\sensors\resourceReferences\ResourceReferenceInterface;
+use psesd\sensors\sites\SiteInterface;
+use psesd\sensors\base\SensorInterface;
+use psesd\sensors\services\ServiceInterface;
+use psesd\sensors\serviceReferences\ServiceReferenceInterface;
+use psesd\sensors\servers\ServerInterface;
+// use psesd\sensors\base\SensorInterface;
+use psesd\sensors\providers\ProviderInterface;
 
-use canis\sensorHub\components\base\Engine;
-use canis\sensorHub\models\Contact as ContactModel;
-use canis\sensorHub\models\Note as NoteModel;
-use canis\sensorHub\models\Site as SiteModel;
-use canis\sensorHub\models\Server as ServerModel;
-use canis\sensorHub\models\Sensor as SensorModel;
-use canis\sensorHub\models\Service as ServiceModel;
-use canis\sensorHub\models\ServiceReference as ServiceReferenceModel;
-use canis\sensorHub\models\Resource as ResourceModel;
-use canis\sensorHub\models\ResourceReference as ResourceReferenceModel;
-use canis\sensorHub\models\Provider as ProviderModel;
+use psesd\sensorHub\components\base\Engine;
+use psesd\sensorHub\models\Contact as ContactModel;
+use psesd\sensorHub\models\Note as NoteModel;
+use psesd\sensorHub\models\Site as SiteModel;
+use psesd\sensorHub\models\Server as ServerModel;
+use psesd\sensorHub\models\Sensor as SensorModel;
+use psesd\sensorHub\models\Service as ServiceModel;
+use psesd\sensorHub\models\ServiceReference as ServiceReferenceModel;
+use psesd\sensorHub\models\Resource as ResourceModel;
+use psesd\sensorHub\models\ResourceReference as ResourceReferenceModel;
+use psesd\sensorHub\models\Provider as ProviderModel;
 
 abstract class Instance 
 	extends \canis\base\Component
@@ -154,7 +154,7 @@ abstract class Instance
         }
         foreach ($models as $modelId) {
             $model = Registry::getObject($modelId);
-            if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \canis\sensors\base\BaseInterface)) {
+            if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \psesd\sensors\base\BaseInterface)) {
                 continue;
             }
             if ($model->hasAttribute('active') && empty($model->active)) {
@@ -175,7 +175,7 @@ abstract class Instance
         $recurse = [];
         foreach ($modelTypes as $type => $models) {
             foreach ($models as $model) {
-                if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \canis\sensors\base\BaseInterface)) {
+                if (!isset($model->dataObject) || !isset($model->dataObject->object) || !($model->dataObject->object instanceof \psesd\sensors\base\BaseInterface)) {
                     continue;
                 }
                 $event->pass($model, ['parentType' => $this->objectType]);
@@ -191,7 +191,7 @@ abstract class Instance
         $event->depth--;
     }
 
-    protected function internalFindModel(\canis\sensors\base\BaseInterface $object, $parentObject, $modelClass)
+    protected function internalFindModel(\psesd\sensors\base\BaseInterface $object, $parentObject, $modelClass)
     {
         $dummyModel = new $modelClass;
         $model = false;
@@ -210,17 +210,17 @@ abstract class Instance
             //  'provider_id' => isset($parentObject) ? $parentObject->model->primaryKey : null,
             //  'object_id' => isset($parentObject) ? $parentObject->model->primaryKey : null
         ];
-        if ($object instanceof \canis\sensors\base\Sensor
-            ||  $object instanceof \canis\sensors\services\Base
+        if ($object instanceof \psesd\sensors\base\Sensor
+            ||  $object instanceof \psesd\sensors\services\Base
             ) {
             $findAttributes['object_id'] = isset($parentObject) ? $parentObject->model->primaryKey : null;
         }
-        if ($object instanceof \canis\sensors\serviceReferences\Base
+        if ($object instanceof \psesd\sensors\serviceReferences\Base
             ) {
             $findAttributes['object_id'] = isset($parentObject) ? $parentObject->model->primaryKey : null;
             $findAttributes['service_id'] = function($object, $parentObject) use ($self) { return $object->discoverServiceId($self); };
         }
-        if ($object instanceof \canis\sensors\resourceReferences\Base
+        if ($object instanceof \psesd\sensors\resourceReferences\Base
             ) {
             $findAttributes['object_id'] = isset($parentObject) ? $parentObject->model->primaryKey : null;
             $findAttributes['resource_id'] = function($object, $parentObject) use ($self) { return $object->discoverResourceId($self); };
@@ -280,7 +280,7 @@ abstract class Instance
         return $className::find()->where($where)->one();
     }
 
-    protected function internalConfigModel(\canis\sensors\base\BaseInterface $object, $parentObject, $model)
+    protected function internalConfigModel(\psesd\sensors\base\BaseInterface $object, $parentObject, $model)
     {
         $self = $this;
         $parentKey = null;
@@ -318,7 +318,7 @@ abstract class Instance
         return $model;
     }
 
-    protected function internalInitialize(\canis\sensors\base\BaseInterface $object, \canis\sensors\base\BaseInterface $parentObject = null, $initialInitialize = true)
+    protected function internalInitialize(\psesd\sensors\base\BaseInterface $object, \psesd\sensors\base\BaseInterface $parentObject = null, $initialInitialize = true)
     {
         $object->model = null;
         $modelClass = static::getSensorObjectModelClass($object);
@@ -580,7 +580,7 @@ abstract class Instance
         return false;
     }
 
-    public static function getSensorObjectModelClass(\canis\sensors\base\BaseInterface $object)
+    public static function getSensorObjectModelClass(\psesd\sensors\base\BaseInterface $object)
     {
         if ($object instanceof SensorInterface) {
             return SensorModel::className();
@@ -610,7 +610,7 @@ abstract class Instance
     }
 
 
-    public static function getSensorObjectInstanceClass(\canis\sensors\base\BaseInterface $object)
+    public static function getSensorObjectInstanceClass(\psesd\sensors\base\BaseInterface $object)
     {
         if ($object instanceof SensorInterface) {
             return SensorInstance::className();

@@ -1,25 +1,25 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\components\web\assetBundles;
+namespace psesd\sensorHub\components\web\assetBundles;
 
 use yii\web\AssetBundle;
 
 class BrowserAsset extends AssetBundle
 {
-    public $sourcePath = '@canis/sensorHub/assets/browser';
+    public $sourcePath = '@psesd/sensorHub/assets/browser';
     public $css = [
-        'css/canis.browser.css',
+        'css/psesd.browser.css',
     ];
     public $js = [
-        'js/canis.browser.js',
+        'js/psesd.browser.js',
     ];
     public $depends = [
-        'canis\sensorHub\components\web\assetBundles\AppAsset'
+        'psesd\sensorHub\components\web\assetBundles\AppAsset'
     ];
 }

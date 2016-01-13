@@ -1,7 +1,7 @@
 <?php
 $config = include __DIR__ . DIRECTORY_SEPARATOR .  'base.php';
 
-$config['controllerNamespace'] = 'canis\sensorHub\controllers';
+$config['controllerNamespace'] = 'psesd\sensorHub\controllers';
 if (isset($base['components']['redis'])) {
 	$config['components']['session'] = [
 	    'class' => 'yii\redis\Session',

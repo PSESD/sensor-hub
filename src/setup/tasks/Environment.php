@@ -6,17 +6,17 @@
  * @license http://psesd.org/license/
  */
 
-namespace canis\sensorHub\setup\tasks;
+namespace psesd\sensorHub\setup\tasks;
 
 use canis\auth\models\Group;
-use canis\sensorHub\models\Relation;
+use psesd\sensorHub\models\Relation;
 
 use Clue\React\Docker\Factory as DockerFactory;
 use Clue\React\Docker\Client as DockerClient;
 use Clue\React\Block;
 /**
  *
- * @author Jacob Morrison <email@ofjacob.com>
+ * @author Jacob Morrison <jmorrison@psesd.org>
  */
 class Environment extends \canis\setup\tasks\Environment
 {

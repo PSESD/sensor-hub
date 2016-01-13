@@ -1,11 +1,11 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
-namespace canis\sensorHub\components\base;
+namespace psesd\sensorHub\components\base;
 
 use Yii;
 
@@ -17,7 +17,7 @@ class Engine extends \canis\base\Component
 	static public function shutdownLogs()
 	{
 		foreach (['cron', 'daemon'] as $logId) {
-			$log = new \canis\sensorHub\models\LogModel;
+			$log = new \psesd\sensorHub\models\LogModel;
 			$log->key = $logId;
 			$log->statusLog->save(true);
 		}
@@ -33,7 +33,7 @@ class Engine extends \canis\base\Component
 	static public function getCronLog()
 	{
 		static::registerShutdownFunction();
-		$cronLog = new \canis\sensorHub\models\LogModel;
+		$cronLog = new \psesd\sensorHub\models\LogModel;
 		$cronLog->key = 'cron';
 		return $cronLog->statusLog;
 	}
@@ -41,7 +41,7 @@ class Engine extends \canis\base\Component
 	static public function getDaemonLog()
 	{
 		static::registerShutdownFunction();
-		$cronLog = new \canis\sensorHub\models\LogModel;
+		$cronLog = new \psesd\sensorHub\models\LogModel;
 		$cronLog->key = 'daemon';
 		return $cronLog->statusLog;
 	}
@@ -49,7 +49,7 @@ class Engine extends \canis\base\Component
 	static public function getProviderLog()
 	{
 		static::registerShutdownFunction();
-		$cronLog = new \canis\sensorHub\models\LogModel;
+		$cronLog = new \psesd\sensorHub\models\LogModel;
 		$cronLog->key = 'provider';
 		return $cronLog->statusLog;
 	}

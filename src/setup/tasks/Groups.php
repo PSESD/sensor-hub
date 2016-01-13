@@ -6,14 +6,14 @@
  * @license http://psesd.org/license/
  */
 
-namespace canis\sensorHub\setup\tasks;
+namespace psesd\sensorHub\setup\tasks;
 
 use canis\auth\models\Group;
 use canis\registry\models\Relation;
 
 /**
  *
- * @author Jacob Morrison <email@ofjacob.com>
+ * @author Jacob Morrison <jmorrison@psesd.org>
  */
 class Groups extends \canis\setup\tasks\BaseTask
 {

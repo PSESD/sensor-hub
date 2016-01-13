@@ -2,10 +2,10 @@
 use canis\acl\security\Gatekeeper;
 use canis\web\unifiedMenu\ApplicationComponent as UnifiedMenuComponent;
 use canis\base\FileStorage;
-use canis\sensorHub\components\base\ClassManager;
-use canis\sensorHub\components\web\View;
-use canis\sensorHub\components\web\Response;
-use canis\sensorHub\Bootstrap;
+use psesd\sensorHub\components\base\ClassManager;
+use psesd\sensorHub\components\web\View;
+use psesd\sensorHub\components\web\Response;
+use psesd\sensorHub\Bootstrap;
 
 use yii\log\FileTarget;
 use yii\caching\DummyCache;
@@ -122,11 +122,11 @@ if (!isset($base['components']['mailer'])) {
 		$base['components']['mailer']['transport'] = $base['params']['mail']['transport'];
 	}
 }
-if (class_exists('canis\sensorHub\models\User')) {
+if (class_exists('psesd\sensorHub\models\User')) {
 	$base['components']['user'] = [
 	    'class' => 'canis\auth\web\User',
 	    'enableAutoLogin' => true,
-	    'identityClass' => 'canis\sensorHub\models\User',
+	    'identityClass' => 'psesd\sensorHub\models\User',
 	    'loginUrl' => ['/login'],
 	];
 }

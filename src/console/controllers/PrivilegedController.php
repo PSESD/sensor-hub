@@ -1,5 +1,5 @@
 <?php
-namespace canis\sensorHub\console\controllers;
+namespace psesd\sensorHub\console\controllers;
 
 use Yii;
 use yii\helpers\FileHelper;

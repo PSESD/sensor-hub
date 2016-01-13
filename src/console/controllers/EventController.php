@@ -1,10 +1,10 @@
 <?php
-namespace canis\sensorHub\console\controllers;
+namespace psesd\sensorHub\console\controllers;
 
 use Yii;
-use canis\sensorHub\models\Instance;
-use canis\sensorHub\models\Sensor;
-use canis\sensorHub\components\engine\Engine;
+use psesd\sensorHub\models\Instance;
+use psesd\sensorHub\models\Sensor;
+use psesd\sensorHub\components\engine\Engine;
 use yii\helpers\FileHelper;
 
 ini_set('memory_limit', -1);

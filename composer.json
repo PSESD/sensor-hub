@@ -1,25 +1,26 @@
 {
-    "name": "canis/sensor-monitor",
+    "name": "psesd/sensor-hub",
     "description": "Monitor sensors and applications",
     "keywords": [
         "sensor",
-        "canis",
+        "psesd",
         "monitor",
         "yii"
     ],
-    "homepage": "http://canis.io",
+    "homepage": "https://www.psesd.org",
     "type": "project",
     "minimum-stability": "dev",
     "license": "BSD-3-Clause",
     "authors": [
         {
             "name": "Jacob Morrison",
-            "email": "jacob@canis.io",
-            "homepage": "http://canis.io"
+            "email": "jmorrison@psesd.org"
         }
     ],
     "require": {
-        "canis/sensors": "*",
+        "psesd/sensors": "*",
+        
+        "canis/yii2-secure-token": "~1.0.0",
         "canis/yii2-canis-lib": "1.*",
         "canis/yii2-canis-registry-lib": "*",
         "canis/yii2-canis-collector-lib": "*",
@@ -83,7 +84,7 @@
     },
     "autoload": {
         "psr-4": {
-            "canis\\sensorHub\\": "src"
+            "psesd\\sensorHub\\": "src"
         }
     }
 }

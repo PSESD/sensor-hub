@@ -6,7 +6,7 @@
  * @license http://psesd.org/license/
  */
 
-namespace canis\sensorHub\components\base;
+namespace psesd\sensorHub\components\base;
 
 use canis\collector\CollectedObjectTrait;
 use canis\base\exceptions\Exception;
@@ -15,7 +15,7 @@ use Yii;
 /**
  * CollectorModule is the base class for all collected modules in Cascade.
  *
- * @author Jacob Morrison <email@ofjacob.com>
+ * @author Jacob Morrison <jmorrison@psesd.org>
  */
 abstract class CollectorModule extends \canis\base\Module implements \canis\collector\CollectedObjectInterface
 {

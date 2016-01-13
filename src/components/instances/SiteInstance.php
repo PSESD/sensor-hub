@@ -1,19 +1,19 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
-namespace canis\sensorHub\components\instances;
+namespace psesd\sensorHub\components\instances;
 
 use Yii;
 use canis\broadcaster\eventTypes\EventType;
-use canis\sensors\providers\ProviderInterface;
-use canis\sensors\serviceReferences\ServiceBinding;
+use psesd\sensors\providers\ProviderInterface;
+use psesd\sensors\serviceReferences\ServiceBinding;
 use canis\registry\models\Registry;
-use canis\sensorHub\models\Service;
-use canis\sensorHub\models\Contact as ContactModel;
+use psesd\sensorHub\models\Service;
+use psesd\sensorHub\models\Contact as ContactModel;
 
 class SiteInstance extends Instance
 {

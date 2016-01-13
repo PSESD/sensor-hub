@@ -1,25 +1,25 @@
 <?php
 /**
- * @link http://canis.io
+ * @link https://www.psesd.org
  *
- * @copyright Copyright (c) 2015 Canis
- * @license http://canis.io/license/
+ * @copyright Copyright (c) 2016 Puget Sound ESD
+ * @license https://raw.githubusercontent.com/PSESD/sensor-hub/master/LICENSE
  */
 
-namespace canis\sensorHub\components\web\assetBundles;
+namespace psesd\sensorHub\components\web\assetBundles;
 
 use yii\web\AssetBundle;
 
 class MonitorAsset extends AssetBundle
 {
-    public $sourcePath = '@canis/sensorHub/assets/monitor';
+    public $sourcePath = '@psesd/sensorHub/assets/monitor';
     public $css = [
-        'css/canis.monitor.css',
+        'css/psesd.monitor.css',
     ];
     public $js = [
-        'js/canis.monitor.js',
+        'js/psesd.monitor.js',
     ];
     public $depends = [
-        'canis\sensorHub\components\web\assetBundles\AppAsset'
+        'psesd\sensorHub\components\web\assetBundles\AppAsset'
     ];
 }
