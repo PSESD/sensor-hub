@@ -1,5 +1,5 @@
 function PsesdSensorObjectBrowser($element, settings) {
-    PsesdComponent.call(this);
+    CanisComponent.call(this);
     var _this = this;
 	this.$element = $element.addClass('browser');
 	this.$element.on('remove', function() {
@@ -22,7 +22,7 @@ function PsesdSensorObjectBrowser($element, settings) {
 	this.isInitializing = false;
 }
 
-PsesdSensorObjectBrowser.prototype = jQuery.extend(true, {}, PsesdComponent.prototype);
+PsesdSensorObjectBrowser.prototype = jQuery.extend(true, {}, CanisComponent.prototype);
 
 PsesdSensorObjectBrowser.prototype.objectClass = 'PsesdSensorObjectBrowser';
 

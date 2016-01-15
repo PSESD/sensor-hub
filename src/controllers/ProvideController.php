@@ -56,7 +56,7 @@ class ProvideController extends \psesd\sensorHub\components\web\Controller
         if (empty($provider)) {
             throw new NotAcceptableHttpException("Provider '". $_POST['provider']['id'] ."' is not known by this hub");
         }
-        if (!isset($provider->dataObject->attributes['apiKey']) || $provider->dataObject->attributes['apiKey'] !== Yii::$app->request->getHeaders()->get('x-api-key')) {
+        if (!isset($provider->dataObject->attributes['apiKey']) || (string)$provider->dataObject->attributes['apiKey'] !== Yii::$app->request->getHeaders()->get('x-api-key')) {
             throw new UnauthorizedHttpException("API key is invalid!");
         }
         if ($provider->dataObject->take($_POST)) {

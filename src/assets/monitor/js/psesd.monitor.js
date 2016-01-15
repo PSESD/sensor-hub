@@ -1,5 +1,5 @@
 function PsesdMonitor($element, settings) {
-    PsesdComponent.call(this);
+    CanisComponent.call(this);
     var _this = this;
 	this.$element = $element.addClass('monitor');
 	this.items = {};
@@ -17,7 +17,7 @@ function PsesdMonitor($element, settings) {
 	});
 }
 
-PsesdMonitor.prototype = jQuery.extend(true, {}, PsesdComponent.prototype);
+PsesdMonitor.prototype = jQuery.extend(true, {}, CanisComponent.prototype);
 
 PsesdMonitor.prototype.objectClass = 'PsesdMonitor';
 

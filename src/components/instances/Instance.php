@@ -664,6 +664,11 @@ abstract class Instance
                 }
                 continue;
             }
+            if (!empty($field['encrypt']) && $field['encrypt'] === true) {
+                $attributes = $this->attributes;
+                $attributes[$id] = Yii::$app->tokenFactory->generateToken($this->attributes[$id]);
+                $this->attributes = $attributes;
+            }
         }
         return empty($this->setupErrors);
     }

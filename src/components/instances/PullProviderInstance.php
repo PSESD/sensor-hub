@@ -139,7 +139,8 @@ class PullProviderInstance extends ProviderInstance
 			'label' => 'API Key',
 			'type' => 'text',
 			'required' => true,
-			'full' => true,
+            'full' => true,
+            'encrypt' => true,
 			'on' => ['create', 'update']
 		];
 

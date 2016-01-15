@@ -80,6 +80,7 @@ class PushProviderInstance extends ProviderInstance
 			'type' => 'text',
 			'required' => true,
 			'full' => true,
+            'encrypt' => true,
 			'disabled' => true,
 			'default' => md5(microtime(true) . Yii::$app->params['salt']),
 			'on' => ['create', 'update']

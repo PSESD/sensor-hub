@@ -5,7 +5,7 @@ Highcharts.setOptions({
 });
 
 function PsesdSensorObjectViewer($element, settings) {
-    PsesdComponent.call(this);
+    CanisComponent.call(this);
     var _this = this;
 	this.$element = $element.addClass('sensor-viewer');
 	this.sensorObject = false;
@@ -26,7 +26,7 @@ function PsesdSensorObjectViewer($element, settings) {
 	});
 }
 
-PsesdSensorObjectViewer.prototype = jQuery.extend(true, {}, PsesdComponent.prototype);
+PsesdSensorObjectViewer.prototype = jQuery.extend(true, {}, CanisComponent.prototype);
 
 PsesdSensorObjectViewer.prototype.objectClass = 'PsesdSensorObjectViewer';
 
@@ -217,7 +217,7 @@ function PsesdObjectColumn(sensorObject, viewComponent, $row) {
 	this.init(viewComponent);
 	this.refresh(viewComponent);
 }
-PsesdObjectColumn.prototype = Object.create(PsesdComponent.prototype);
+PsesdObjectColumn.prototype = Object.create(CanisComponent.prototype);
 PsesdObjectColumn.prototype.objectClass = 'PsesdObjectColumn';
 PsesdObjectColumn.prototype.constructor = PsesdObjectColumn;
 
