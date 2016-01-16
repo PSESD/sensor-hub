@@ -9,7 +9,7 @@
     ],
     "homepage": "https://www.psesd.org",
     "type": "project",
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "license": "BSD-3-Clause",
     "authors": [
         {
