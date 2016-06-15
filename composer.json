@@ -9,7 +9,6 @@
     ],
     "homepage": "https://www.psesd.org",
     "type": "project",
-    "minimum-stability": "stable",
     "license": "BSD-3-Clause",
     "authors": [
         {
@@ -18,7 +17,7 @@
         }
     ],
     "require": {
-        "psesd/sensors": "*",
+        "psesd/sensors": "dev-master",
         "yiisoft/yii2": ">=2.0.5",
         "canis/yii2-secure-token": "~1.0.0",
         "canis/yii2-canis-lib": "~1.0.0",
@@ -85,6 +84,4 @@
     "autoload": {
         "psr-4": {
             "psesd\\sensorHub\\": "src"
-        }
-    }
-}
+     

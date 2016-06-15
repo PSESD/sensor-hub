@@ -65,6 +65,18 @@ abstract class ProviderInstance extends Instance
 
     abstract public function getProviderType();
     
+    public function isStale()
+    {
+        $checkInterval = "+5 minutes";
+        if (isset($this->attributes['checkInterval'])) {
+            $checkInterval = $this->attributes['checkInterval'];
+        }
+        $failedAttempts = 3;
+        $timeFromNow = strtotime($checkInterval) - time();
+        $timeAgainStale = time() - ($timeFromNow * $failedAttempts);
+        return strtotime($this->model->last_refresh . ' UTC') < $timeAgainStale;
+    }
+
     public function getObjectModel()
     {
 
@@ -74,9 +86,9 @@ abstract class ProviderInstance extends Instance
     {   
         $this->log = $log;
         $id = md5(microtime(true));
-        $this->log->addInfo("Starting initializing provider ({$id}; {$this->model->system_id})");
+        // $this->log->addInfo("Starting initializing provider ({$id}; {$this->model->system_id})");
         $result = $this->internalInitialize($this->object, null, $initialInitialize);
-        $this->log->addInfo("Finished initializing provider ({$id}; {$this->model->system_id})");
+        // $this->log->addInfo("Finished initializing provider ({$id}; {$this->model->system_id})");
         return $result;
     }
 

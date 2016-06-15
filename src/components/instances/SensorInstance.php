@@ -17,9 +17,26 @@ use psesd\sensorHub\models\SensorData;
 use canis\registry\models\Registry;
 use psesd\sensors\base\Sensor as BaseSensor;
 
-class SensorInstance extends Instance
+class SensorInstance 
+    extends Instance
+    implements \canis\broadcaster\BroadcastableInterface
 {
     const COLLECT_DEPTH = 1;
+
+    public function __wakeup()
+    {
+        foreach ($this->behaviors() as $id => $behavior) {
+            $this->attachBehavior($id, $behavior);
+        }
+    }
+    public function behaviors()
+    {
+        return array_merge(parent::behaviors(),
+            [
+                'Broadcastable' => 'canis\broadcaster\Broadcastable'
+            ]
+        );
+    }
 
     public function getObjectType()
     {
@@ -44,8 +61,13 @@ class SensorInstance extends Instance
 
 	static public function collectEventTypes()
     {
-    	$events = [];
-    	return $events;
+        $events = [];
+        $sensorDurationExtra = '{% if duration %} The previous state (\'{{ oldState }}\') lasted for {{ duration }}.{% endif %}';
+        $events['sensor_state_changed'] = [
+            'name' => 'Sensor State Changed',
+            'descriptorString' => 'Sensor \'{{ sensor.name }}\' in \'{{ object.name }}\' changed from \'{{ oldState }}\' to \'{{ newState }}\'.'.$sensorDurationExtra
+        ];
+        return $events;
     }
 
     public function getObjectModel()
@@ -104,17 +126,43 @@ class SensorInstance extends Instance
 
     protected function triggerStateChange(CheckEvent $event)
     {
-    	$sensorEvent = new SensorEvent;
-    	$sensorEvent->sensor_id = $this->model->primaryKey;
-    	$sensorEvent->old_state = $this->model->state;
+        $payload = [];
+        $duration = false;
+        $previousSensorEvent = SensorEvent::find()->where(['sensor_id' => $this->model->primaryKey])->orderBy(['created' => SORT_DESC])->one();
+        if ($previousSensorEvent) {
+            $durationSeconds = time() - strtotime($previousSensorEvent->created . ' UTC');
+            $duration = DateHelper::niceDuration($durationSeconds, 2);
+        }
+        $sensorEvent = new SensorEvent;
+        $sensorEvent->sensor_id = $this->model->primaryKey;
+        $sensorEvent->old_state = $this->model->state;
         if (empty($sensorEvent->old_state)) {
             $sensorEvent->old_state = BaseSensor::STATE_UNCHECKED;
         }
-    	$sensorEvent->new_state = $event->state;
-    	$sensorEvent->data = serialize($event);
-    	$sensorEvent->save();
-    	$this->model->state = $event->state;
-    	return true;
+        $payload['oldState'] = $sensorEvent->old_state;
+        $sensorEvent->new_state = $payload['newState'] = $event->state;
+        $sensorEvent->data = serialize($event);
+        $sensorEvent->save();
+        $this->model->state = $event->state;
+
+        $payload['duration'] = $duration;
+        $payload['sensor'] = [];
+        $payload['sensor']['id'] = $this->model->primaryKey;
+        $payload['sensor']['system_id'] = $this->model->system_id;
+        $payload['sensor']['name'] = $this->object->name;
+        $payload['object']['id'] = null;
+        $payload['object']['name'] = null;
+        $objectId = $this->model->primaryKey;
+        if (!empty($this->objectModel)) {
+            $payload['object']['id'] = $this->objectModel->primaryKey;
+            $payload['object']['name'] = $this->objectModel->descriptor;
+        }
+        $priority = EventType::PRIORITY_MEDIUM;
+        if ($this->object->isCritical && $payload['oldState'] !== BaseSensor::STATE_UNCHECKED) {
+            $priority = EventType::PRIORITY_CRITICAL;
+        }
+        $this->triggerBroadcastEvent('sensor_state_changed', $payload, $objectId, $priority);
+        return true;
     }
     
     public function pauseSensor($save = true)
@@ -196,11 +244,22 @@ class SensorInstance extends Instance
             $packageItem = [
                 'datetime' => date("c", strtotime($item->created . ' UTC')),
                 'datetimeHuman' => date("F j, Y g:i:sa T", strtotime($item->created . ' UTC')),
-                'event' => $this->object->describeEventFormatted($this, $item)
+                'event' => $this->object->describeEventFormatted($this, $item),
+                'messages' => []
             ];
+            foreach ($item->dataObject->getMessages() as $message) {
+                if ($message['level'] === '_e') {
+                    $state = 'danger';
+                } elseif ($message['level'] === '_w') {
+                    $state = 'warning';
+                } else {
+                    $state = 'info';
+                }
+                $packageItem['messages'][] = ['datetime' => date("F j, Y g:i:sa T", $message['time']), 'message' => $message['message'], 'state' => $state];
+            }
             if ($item->new_state === BaseSensor::STATE_NORMAL) {
                 $packageItem['state'] = 'success';
-            } elseif ($item->new_state === BaseSensor::STATE_FAIL || $item->new_state === BaseSensor::STATE_UNCHECKED) {
+            } elseif ($item->new_state === BaseSensor::STATE_CHECK_FAIL || $item->new_state === BaseSensor::STATE_UNCHECKED) {
                 $packageItem['state'] = 'warning';
             } else {
                 $packageItem['state'] = 'danger';

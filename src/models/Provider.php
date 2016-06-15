@@ -115,6 +115,13 @@ class Provider extends \canis\db\ActiveRecordRegistry
         return true;
     }
 
+    public function getDescriptor()
+    {
+        if (!isset($this->dataObject->object->name)) {
+            return 'Unknown Provider';
+        }
+        return $this->dataObject->object->name;
+    }
 
     public function childModels($active = true)
     {

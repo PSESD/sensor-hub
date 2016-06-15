@@ -63,9 +63,7 @@ class Bootstrap implements \yii\base\BootstrapInterface
         if ($userClass) {
             $containers[] = $userClass::className();
         }
-        // $containers[] = \canis\appFarm\components\applications\ApplicationInstance::className();
-        // $containers[] = \canis\appFarm\components\applications\ServiceInstance::className();
-        // $containers[] = \canis\appFarm\components\applications\sensors\SensorInstance::className();
+        $containers[] = \psesd\sensorHub\components\instances\SensorInstance::class;
         $event->module->collectEventTypes($containers);
     }
 

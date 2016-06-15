@@ -622,12 +622,12 @@ PsesdObjectColumn_SensorEvents.prototype.refresh = function(viewComponent) {
 		hasItems = true;
 		if (_this.items[itemId] === undefined) {
 			_this.items[itemId] = {'item': item, 'elements': {}};
-			_this.items[itemId].elements.$item = $("<div />", {'class': 'list-group-item'}).appendTo(_this.elements.$list);
+			_this.items[itemId].elements.$item = $("<div />", {'class': 'list-group-item'}).prependTo(_this.elements.$list);
 			_this.items[itemId].elements.$heading = $("<div />", {'class': 'list-group-item-heading'}).appendTo(_this.items[itemId].elements.$item);
 			_this.items[itemId].elements.$title = $("<span />", {}).appendTo(_this.items[itemId].elements.$heading);
 			_this.items[itemId].elements.$timestamp = $("<time />", {'class': 'timeago list-group-item-text', 'datetime': item.datetime, 'title': item.datetimeHuman}).appendTo(_this.items[itemId].elements.$item);
 		}
-		_this.items[itemId].elements.$item.appendTo(_this.elements.$list);
+		_this.items[itemId].elements.$item.prependTo(_this.elements.$list);
 		_this.items[itemId].elements.$title.html(item.event);
 		
 		_this.items[itemId].elements.$item.removeClass('list-group-item-success list-group-item-info list-group-item-danger list-group-item-warning');

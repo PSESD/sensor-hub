@@ -23,10 +23,10 @@ class ProviderController extends \psesd\sensorHub\controllers\Controller
     {
         $providers = [];
         foreach (Provider::find()->all() as $provider) {
-            if (empty($provider->dataObject->object)) {
+            if (empty($provider->descriptor)) {
                 $providerName = 'Unknown Provider';
             } else {
-                $providerName = $provider->dataObject->object->name;
+                $providerName = $provider->descriptor;
             }
             $providers[] = [
                 'id' => $provider->id,
