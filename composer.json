@@ -84,4 +84,6 @@
     "autoload": {
         "psr-4": {
             "psesd\\sensorHub\\": "src"
-     
+     }
+ }
+}
