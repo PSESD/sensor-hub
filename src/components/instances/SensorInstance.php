@@ -15,6 +15,7 @@ use psesd\sensors\base\CheckEvent;
 use psesd\sensorHub\models\SensorEvent;
 use psesd\sensorHub\models\SensorData;
 use canis\registry\models\Registry;
+use canis\helpers\Date as DateHelper;
 use psesd\sensors\base\Sensor as BaseSensor;
 
 class SensorInstance 
