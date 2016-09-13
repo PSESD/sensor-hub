@@ -71,7 +71,7 @@ abstract class ProviderInstance extends Instance
         if (isset($this->attributes['checkInterval'])) {
             $checkInterval = $this->attributes['checkInterval'];
         }
-        $failedAttempts = 3;
+        $failedAttempts = 10;
         $timeFromNow = strtotime($checkInterval) - time();
         $timeAgainStale = time() - ($timeFromNow * $failedAttempts);
         return strtotime($this->model->last_refresh . ' UTC') < $timeAgainStale;

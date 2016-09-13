@@ -37,6 +37,124 @@ abstract class BaseBrowseController extends Controller
 		return $config;
 	}
 
+    public function actionCsv($csvConfigType = 'default')
+    {
+        $config = $this->config();
+        $itemClass = $config['modelClass'];
+        $items = $itemClass::find()->where(['active' => 1]);
+        if (!empty($config['orderBy'])) {
+            $items->orderBy($config['orderBy']);
+        }
+        $items = $items->all();
+        $package = [];
+        foreach ($items as $item) {
+            $package[$item->id] = $item->dataObject->package;
+        }
+        if (!isset($_GET['config'])) {
+            $_GET['config'] = 'default';
+        }
+        $configs = [];
+        $configs['resource.default'] = [
+            'filter' => [],
+            'columns' => [
+                'objectTypeDescriptor' => 'Type',
+                'descriptor' => 'Descriptor',
+                'components.servers.items$label' => 'Servers',
+                'components.sites.items.sites.subitems$label' => 'Sites'
+            ]
+        ];
+        $configs['resource.ip'] = [
+            'filter' => [
+                'objectTypeDescriptor' => 'IP Address'
+            ],
+            'columns' => [
+                'descriptor' => 'Descriptor',
+                'components.servers.items$label' => 'Servers',
+                'components.sites.items.sites.subitems$label' => 'Sites'
+            ]
+        ];
+        $configs['resource.ssl'] = [
+            'filter' => [
+                'objectTypeDescriptor' => 'SSL Certificate'
+            ],
+            'columns' => [
+                'descriptor' => 'Descriptor',
+                'info.Issuer' => 'Issuer',
+                'info.Expiration Date' => 'Expiration Date',
+                'components.servers.items$label' => 'Servers',
+                'components.sites.items.sites.subitems$label' => 'Sites'
+            ]
+        ];
+        $configs['resource.db'] = [
+            'filter' => [
+                'objectTypeDescriptor' => 'Database'
+            ],
+            'columns' => [
+                'descriptor' => 'Descriptor',
+                'components.servers.items$label' => 'Servers',
+                'components.sites.items.sites.subitems$label' => 'Sites'
+            ]
+        ];
+
+        $configs['site.default'] = [
+            'filter' => [],
+            'columns' => [
+                'objectTypeDescriptor' => 'Type',
+                'descriptor' => 'Descriptor',
+                'info.Connected Services' => 'Services',
+                'components.server.items$label' => 'Servers',
+                'components.sites.items.sites.subitems$label' => 'Sites'
+            ]
+        ];
+        //\d($package);exit;
+        $csvConfig = $configs[$config['id'].'.default'];
+        if (isset($_GET['config']) && isset($configs[$config['id'].'.'.$_GET['config']])) {
+            $csvConfig = $configs[$config['id'].'.'.$_GET['config']];
+        }
+        $headers = array_values($csvConfig['columns']);
+        $rows = [];
+        foreach ($package as $item) {
+            foreach ($csvConfig['filter'] as $key => $value) {
+                if ($this->extractValue($item, $key) !== $value) {
+                    continue 2;
+                }
+            }
+            $row = [];
+            foreach ($csvConfig['columns'] as $column => $label) {
+                $row[] = $this->extractValue($item, $column);
+            }
+            $rows[] = $row;
+        }
+        $csvFileName = $config['id'] .'-'. $_GET['config'] .'.csv';
+        header("Cache-Control: public");
+        header("Content-Description: File Transfer");
+        header("Content-Disposition: attachment; filename=".$csvFileName);
+        header("Content-Type: application/octet-stream");
+        header("Content-Transfer-Encoding: binary");
+        $tmpfile = tempnam(sys_get_temp_dir(), 'tmp');
+        $tmp = fopen($tmpfile, 'w');
+        fputcsv($tmp, $headers);
+        foreach ($rows as $row) {
+            fputcsv($tmp, $row);
+        }
+        fclose($tmp);
+
+        echo file_get_contents($tmpfile);
+    }
+
+    private function extractValue($item, $column)
+    {
+        $p = preg_split('/\$/', $column);
+        $extracted = ArrayHelper::getValue($item, $p[0]);
+        if (is_array($extracted)) {
+            if (!isset($p[1])) {
+                $p[1] = 'label';
+            }
+            return implode('; ', ArrayHelper::getColumn($extracted, $p[1]));
+        }
+        return $extracted;
+    }
+
 	public function getObjectTypeConfig($id)
 	{
 		$config = [];
